@@ -29,19 +29,19 @@ export async function activate(context: vscode.ExtensionContext) {
 		},
 	};
 	const clientOptions: lsp.LanguageClientOptions = {
-		documentSelector: [{ language: 'html1' }],
+		documentSelector: [{ language: 'marko' }],
 		initializationOptions,
 	};
 	client = new lsp.LanguageClient(
-		'html1-language-server',
-		'HTML1 Language Server',
+		'marko-language-server',
+		'Marko Language Server',
 		serverOptions,
 		clientOptions,
 	);
 	await client.start();
 
 	// support for auto close tag
-	activateAutoInsertion('html1', client);
+	activateAutoInsertion('marko', client);
 
 	// support for https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volarjs-labs
 	// ref: https://twitter.com/johnsoncodehk/status/1656126976774791168

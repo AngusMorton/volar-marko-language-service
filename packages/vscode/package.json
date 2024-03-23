@@ -1,49 +1,81 @@
 {
-	"private": true,
-	"name": "vscode-html1",
-	"version": "0.0.1",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/volarjs/starter.git",
-		"directory": "packages/vscode"
-	},
-	"categories": [
-		"Programming Languages"
-	],
-	"displayName": "HTML1 Language Features",
-	"description": "HTML1 Language Features",
-	"author": "volarjs",
-	"publisher": "volarjs",
-	"engines": {
-		"vscode": "^1.82.0"
-	},
-	"activationEvents": [
-		"onLanguage:html1"
-	],
-	"main": "./dist/client.js",
-	"contributes": {
-		"languages": [
-			{
-				"id": "html1",
-				"extensions": [
-					".html1"
-				]
-			}
-		]
-	},
-	"scripts": {
-		"build": "node scripts/build -- --minify",
-		"watch": "npm run build -- --watch",
-		"pack": "npm run build && vsce package --pre-release",
-		"release": "npm run build && vsce publish --pre-release"
-	},
-	"devDependencies": {
-		"@html1/language-server": "workspace:*",
-		"@types/vscode": "^1.82.0",
-		"@volar/language-server": "~2.0.0",
-		"@volar/vscode": "~2.0.0",
-		"esbuild": "latest",
-		"vsce": "latest",
-		"vscode-languageclient": "^9.0.1"
-	}
+  "private": true,
+  "name": "vscode-marko",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/volarjs/starter.git",
+    "directory": "packages/vscode"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "displayName": "marko Language Features",
+  "description": "marko Language Features",
+  "author": "volarjs",
+  "publisher": "volarjs",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "activationEvents": [
+    "onLanguage:marko"
+  ],
+  "main": "./dist/client.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "marko",
+        "aliases": [
+          "Marko",
+          "marko"
+        ],
+        "extensions": [
+          ".marko"
+        ],
+        "configuration": "./marko.configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "marko",
+        "scopeName": "text.marko",
+        "path": "./syntaxes/marko.tmLanguage.json",
+        "embeddedLanguages": {
+          "source.css": "css",
+          "source.less": "less",
+          "source.scss": "scss",
+          "source.ts": "typescript"
+        }
+      },
+      {
+        "scopeName": "embedded.marko.block",
+        "path": "./syntaxes/embedded.marko.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown",
+          "source.mdx"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.marko": "marko"
+        },
+        "tokenTypes": {
+          "meta.embedded.block.marko": "other"
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node scripts/build -- --minify",
+    "watch": "npm run build -- --watch",
+    "pack": "npm run build && vsce package --pre-release",
+    "release": "npm run build && vsce publish --pre-release"
+  },
+  "devDependencies": {
+    "marko-language-server": "workspace:*",
+    "@types/vscode": "^1.82.0",
+    "@volar/language-server": "~2.0.0",
+    "@volar/vscode": "~2.0.0",
+    "esbuild": "latest",
+    "vsce": "latest",
+    "vscode-languageclient": "^9.0.1"
+  }
 }

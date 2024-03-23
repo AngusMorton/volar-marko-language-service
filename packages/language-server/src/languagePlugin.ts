@@ -1,122 +1,166 @@
-import { forEachEmbeddedCode, type LanguagePlugin, type VirtualCode } from '@volar/language-core';
-import type * as ts from 'typescript';
-import * as html from 'vscode-html-languageservice';
+import {
+  CodeMapping,
+  forEachEmbeddedCode,
+  type LanguagePlugin,
+  type VirtualCode,
+} from "@volar/language-core";
+import type * as ts from "typescript";
+import {
+  parse,
+  extractScript,
+  ScriptLang,
+  Project,
+  NodeType,
+} from "@marko/language-tools";
+import { URI } from "vscode-uri";
+import path from "path";
 
-export const html1LanguagePlugin: LanguagePlugin = {
-	createVirtualCode(_id, languageId, snapshot) {
-		if (languageId === 'html1') {
-			return createHtml1Code(snapshot);
-		}
-	},
-	updateVirtualCode(_id, _oldVirtualCode, newSnapshot) {
-		return createHtml1Code(newSnapshot);
-	},
-	typescript: {
-		extraFileExtensions: [{ extension: 'html1', isMixedContent: true, scriptKind: 7 }],
-		getScript(rootVirtualCode) {
-			for (const code of forEachEmbeddedCode(rootVirtualCode)) {
-				if (code.id.startsWith('script_')) {
-					return {
-						code,
-						extension: '.js',
-						scriptKind: 1,
-					};
-				}
-			}
-		},
-	},
+export const markoLanguagePlugin: LanguagePlugin = {
+  createVirtualCode(_id, languageId, snapshot, files) {
+    if (languageId === "marko") {
+      return createMarkoCode(_id, snapshot);
+    }
+  },
+  updateVirtualCode(_id, _oldVirtualCode, newSnapshot) {
+    return createMarkoCode(_id, newSnapshot);
+  },
+  typescript: {
+    extraFileExtensions: [
+      { extension: "marko", isMixedContent: true, scriptKind: 7 },
+    ],
+    getScript(rootVirtualCode) {
+      for (const code of forEachEmbeddedCode(rootVirtualCode)) {
+        if (code.id.startsWith("script_")) {
+          return {
+            code,
+            extension: ".ts",
+            scriptKind: 3,
+          };
+        }
+      }
+    },
+  },
 };
 
-const htmlLs = html.getLanguageService();
-
-export interface Html1Code extends VirtualCode {
-	// Reuse for custom service plugin
-	htmlDocument: html.HTMLDocument;
+export interface MarkoCode extends VirtualCode {
+  markoDocument: ReturnType<typeof parse>;
+  tagLookup: ReturnType<typeof Project.getTagLookup>;
 }
 
-function createHtml1Code(snapshot: ts.IScriptSnapshot): Html1Code {
-	const document = html.TextDocument.create('', 'html', 0, snapshot.getText(0, snapshot.getLength()));
-	const htmlDocument = htmlLs.parseHTMLDocument(document);
+function createMarkoCode(id: string, snapshot: ts.IScriptSnapshot): MarkoCode {
+  console.log(id);
+  const { fsPath, scheme } = URI.parse(id);
+  const filename = scheme === "file" ? fsPath : undefined;
+  console.log("filename", filename);
+  const dirname = filename ? path.dirname(filename) : process.cwd();
+  const document = snapshot.getText(0, snapshot.getLength());
+  const markoDocument = parse(document);
+  const tagLookup = Project.getTagLookup(dirname);
 
-	return {
-		id: 'root',
-		languageId: 'html',
-		snapshot,
-		mappings: [{
-			sourceOffsets: [0],
-			generatedOffsets: [0],
-			lengths: [snapshot.getLength()],
-			data: {
-				completion: true,
-				format: true,
-				navigation: true,
-				semantic: true,
-				structure: true,
-				verification: true,
-			},
-		}],
-		embeddedCodes: [...createEmbeddedCodes()],
-		htmlDocument,
-	};
+  return {
+    id: "root",
+    languageId: "marko",
+    snapshot,
+    mappings: [
+      {
+        sourceOffsets: [0],
+        generatedOffsets: [0],
+        lengths: [snapshot.getLength()],
+        data: {
+          completion: true,
+          format: true,
+          navigation: true,
+          semantic: true,
+          structure: true,
+          verification: true,
+        },
+      },
+    ],
+    embeddedCodes: [...createEmbeddedCodes()],
+    markoDocument,
+    tagLookup,
+  };
 
-	function* createEmbeddedCodes(): Generator<VirtualCode> {
+  function* createEmbeddedCodes(): Generator<VirtualCode> {
+    console.log("Extracting Script");
+    const script = extractScript({
+      parsed: markoDocument,
+      scriptLang: ScriptLang.js,
+      lookup: tagLookup,
+    });
+    const scriptText = script.toString();
 
-		let styles = 0;
-		let scripts = 0;
+    yield {
+      id: "script_0",
+      languageId: "typescript",
+      snapshot: {
+        getText: (start, end) => scriptText.substring(start, end),
+        getLength: () => scriptText.length,
+        getChangeRange: () => undefined,
+      },
+      mappings: [generateMappingsFromExtracted(script)],
+      embeddedCodes: [],
+    };
+  }
+}
 
-		for (const root of htmlDocument.roots) {
-			if (root.tag === 'style' && root.startTagEnd !== undefined && root.endTagStart !== undefined) {
-				const styleText = snapshot.getText(root.startTagEnd, root.endTagStart);
-				yield {
-					id: 'style_' + styles++,
-					languageId: 'css',
-					snapshot: {
-						getText: (start, end) => styleText.substring(start, end),
-						getLength: () => styleText.length,
-						getChangeRange: () => undefined,
-					},
-					mappings: [{
-						sourceOffsets: [root.startTagEnd],
-						generatedOffsets: [0],
-						lengths: [styleText.length],
-						data: {
-							completion: true,
-							format: true,
-							navigation: true,
-							semantic: true,
-							structure: true,
-							verification: true,
-						},
-					}],
-					embeddedCodes: [],
-				};
-			}
-			if (root.tag === 'script' && root.startTagEnd !== undefined && root.endTagStart !== undefined) {
-				const text = snapshot.getText(root.startTagEnd, root.endTagStart);
-				yield {
-					id: 'script_' + scripts++,
-					languageId: 'typescript',
-					snapshot: {
-						getText: (start, end) => text.substring(start, end),
-						getLength: () => text.length,
-						getChangeRange: () => undefined,
-					},
-					mappings: [{
-						sourceOffsets: [root.startTagEnd],
-						generatedOffsets: [0],
-						lengths: [text.length],
-						data: {
-							completion: true,
-							format: true,
-							navigation: true,
-							semantic: true,
-							structure: true,
-							verification: true,
-						},
-					}],
-					embeddedCodes: [],
-				};
-			}
-		}
-	};
+function generateMappingsFromExtracted(
+  extracted: ReturnType<typeof extractScript>
+): CodeMapping {
+  const sourceOffsets = [];
+  const generatedOffsets: number[] = [];
+  const lengths = [];
+
+  for (const node of extracted.parsed.program.static) {
+    if (node.type === NodeType.Class) {
+      // const sourceStartLocation = extracted.parsed.positionAt(node.start);
+      // sourceStartLocation.line += 1;
+      // const modifiedSourceStartOffset = extracted.parsed.(sourceStartLocation);
+      const generatedStartOffset = extracted.generatedOffsetAt(node.start + 10);
+      console.log(" - generatedStartOffset", generatedStartOffset);
+      console.log(extracted.parsed.code.slice(node.start, node.end));
+      if (generatedStartOffset) {
+        sourceOffsets.push(node.start + 10);
+        generatedOffsets.push(generatedStartOffset);
+        lengths.push(node.end - (node.start + 10));
+      } else {
+        console.error(
+          `Failed to find generated offset for class at ${node.start}`
+        );
+      }
+    }
+  }
+
+  for (const node of extracted.parsed.program.body) {
+    console.log("NodeType", NodeType[node.type]);
+    if (node.type === NodeType.Scriptlet) {
+      const generatedStartOffset = extracted.generatedOffsetAt(
+        node.value.start
+      );
+      console.log(" - generatedStartOffset", generatedStartOffset);
+      if (generatedStartOffset) {
+        sourceOffsets.push(node.value.start);
+        generatedOffsets.push(generatedStartOffset);
+        lengths.push(node.value.end - node.value.start);
+      } else {
+        console.error(
+          `Failed to find generated offset for scriptlet at ${node.value.start}`
+        );
+      }
+    }
+  }
+  return {
+    sourceOffsets,
+    generatedOffsets,
+    lengths,
+
+    data: {
+      completion: true,
+      format: true,
+      navigation: true,
+      semantic: true,
+      structure: true,
+      verification: true,
+    },
+  };
 }

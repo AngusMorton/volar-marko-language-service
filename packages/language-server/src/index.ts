@@ -1,4 +1,4 @@
-import { html1LanguagePlugin, Html1Code } from './languagePlugin';
+import { markoLanguagePlugin, MarkoCode } from './languagePlugin';
 import { create as createEmmetService } from 'volar-service-emmet';
 import { create as createHtmlService } from 'volar-service-html';
 import { create as createCssService } from 'volar-service-css';
@@ -13,7 +13,7 @@ connection.listen();
 connection.onInitialize(params => {
 	return server.initialize(params, createTypeScriptProjectProvider, {
 		getLanguagePlugins() {
-			return [html1LanguagePlugin];
+			return [markoLanguagePlugin];
 		},
 		getServicePlugins() {
 			return [
@@ -25,7 +25,7 @@ connection.onInitialize(params => {
 					create(context) {
 						return {
 							provideDiagnostics(document) {
-								const virtualCode = context.documents.getVirtualCodeByUri(document.uri)[0] as VirtualCode | Html1Code | undefined;
+								const virtualCode = context.documents.getVirtualCodeByUri(document.uri)[0] as VirtualCode | MarkoCode | undefined;
 								if (!virtualCode || !('htmlDocument' in virtualCode)) {
 									return;
 								}
@@ -41,7 +41,7 @@ connection.onInitialize(params => {
 											start: document.positionAt(styleNodes[i].start),
 											end: document.positionAt(styleNodes[i].end),
 										},
-										source: 'html1',
+										source: 'htmljs',
 										message: 'Only one style tag is allowed.',
 									});
 								}

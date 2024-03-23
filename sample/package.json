@@ -1,0 +1,16 @@
+{
+  "name": "marko-sample",
+  "version": "0.0.1",
+  "main": "out/index.js",
+  "license": "MIT",
+  "files": [
+    "out/**/*.js",
+    "out/**/*.d.ts"
+  ],
+  "bin": {
+    "marko-language-server": "./bin/marko-language-server.js"
+  },
+  "dependencies": {
+    "marko": "^5.32.11"
+  }
+}
