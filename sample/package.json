@@ -11,6 +11,12 @@
     "marko-language-server": "./bin/marko-language-server.js"
   },
   "dependencies": {
-    "marko": "^5.32.11"
+    "marko": "^5.33.11"
+  },
+  "devDependencies": {
+    "@marko/tags-api-preview": "^0.7.5",
+    "prettier": "^3.2.5",
+    "prettier-plugin-htmljs": "*",
+    "typescript": "^5.4.3"
   }
 }

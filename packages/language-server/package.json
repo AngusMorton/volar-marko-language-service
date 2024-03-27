@@ -1,28 +1,39 @@
 {
-	"name": "marko-language-server",
-	"version": "0.0.1",
-	"main": "out/index.js",
-	"license": "MIT",
-	"files": [
-		"out/**/*.js",
-		"out/**/*.d.ts"
-	],
-	"bin": {
-		"marko-language-server": "./bin/marko-language-server.js"
-	},
-	"dependencies": {
-		"@marko/compiler": "^5.34.7",
-		"@marko/language-tools": "^2.2.6",
-		"@volar/language-core": "~2.0.0",
-		"@volar/language-server": "~2.0.0",
-		"@volar/language-service": "~2.0.0",
-		"htmljs-parser": "^5.5.2",
-		"marko": "^5.32.11",
-		"volar-service-css": "volar-2.0",
-		"volar-service-emmet": "volar-2.0",
-		"volar-service-html": "volar-2.0",
-		"volar-service-typescript": "volar-2.0",
-		"vscode-html-languageservice": "^5.1.1",
-		"vscode-uri": "^3.0.8"
-	}
+  "name": "marko-language-server",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "files": [
+    "bin",
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "types/**/*.d.ts"
+  ],
+  "bin": {
+    "marko-language-server": "./bin/marko-language-server.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@marko/language-tools": "^2.2.6",
+    "@volar/language-core": "2.1.5",
+    "@volar/language-server": "2.1.5",
+    "@volar/language-service": "2.1.5",
+    "@volar/typescript": "2.1.5",
+    "htmljs-parser": "^5.5.2",
+    "marko": "^5.33.10",
+    "volar-service-css": "volar-2.1",
+    "volar-service-emmet": "volar-2.1",
+    "volar-service-html": "volar-2.1",
+    "volar-service-typescript": "volar-2.1",
+    "volar-service-prettier": "volar-2.1",
+    "vscode-html-languageservice": "^5.2.0",
+    "vscode-uri": "^3.0.8"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "typescript": "^5.2.2"
+  }
 }

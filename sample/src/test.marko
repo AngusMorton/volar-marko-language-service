@@ -1,33 +1,41 @@
-<!-- type any css in following block to get css completion -->
-// <style>.foo { c }</style>
+import { isFruit } from "./util";
+export interface Input {
+  apple: string;
+}
+class {
+  declare state: {
+    something: string;
+  };
 
-<!-- TS support -->
-// <script>
-// let foo: string = 123;
-// </script>
-
-<!-- custom diagnosis: Only one style tag is allowed. -->
-// <style></style>
-
-<my-let />
-
-$ console.log("I'm in a scriptlet");
-$ const apple: string = "test";
-
-class {  
   onCreate(input: Input) {
     this.state = {
       ...input,
       something: "else",
     };
 
-    const banana = "string" + apple;
+    const banana = "string" + input.apple;
     if (banana === 5) {
       console.log("banana is 6");
     }
   }
 }
+$ console.log("I'm in a scriptlet");
+static const banana = 5;
+$ const apple = "test";
+<div>
+  $ console.log("I'm a nested scriptlet");
+  <h1>I'm being edited in Volar</h1>
+  <div>I can render scriptlets and stuff: ${apple}.</div>
+  <h2>${component.state.something}</h2>
+  <if(banana)>
+    <div>Something is true</div>
+  </if>
+  <my-let />
 
+  <for|colour| of=["green", "blue", "red", banana, apple]>
+    <h3>${colour}</h3>
+  </for>
+</div>
 style {
   /* Latin */
   @font-face {
@@ -41,7 +49,6 @@ style {
       url("./roboto-latin-300.woff2") format("woff2");
   }
 }
-
 style {
   @font-face {
     font-family: "Roboto";

@@ -1,0 +1,28 @@
+export interface Input<T> {
+  showMore: Marko.AttrTag<{ renderBody: Marko.Body }>;
+  item: Marko.RepeatableAttrTag<{ renderBody: Marko.Body }> | undefined;
+}
+
+<let/showAll=false/>
+<const/itemList=(Array.isArray(input.item) ? input.item : [input.item])/>
+<const/hideFullList=(itemList.length > 5 && !showAll)/>
+
+<div class="space-y-px">
+  <for|item, index| of=itemList>
+    <const/isHidden=(hideFullList && index > 4)/>
+    <div ...{ class: isHidden ? "hidden" : "" }>
+      <${item}/>
+    </div>
+  </for>
+</div>
+<if=hideFullList>
+  <button
+    class="flex w-full items-center justify-center rounded-b bg-[rgba(0,0,0,.02)] text-xs uppercase leading-9 text-n-40 hover:bg-[rgba(0,0,0,0.03)]"
+    type="button"
+    onClick() {
+      showAll = true;
+    }
+  >
+    <${input.showMore}/>
+  </button>
+</if>

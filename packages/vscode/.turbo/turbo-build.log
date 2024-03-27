@@ -1,0 +1,7 @@
+
+> vscode-marko@0.0.1 build C:\Users\USER\Documents\marko\molar\packages\vscode
+> node scripts/build -- --minify
+
+Building VSCode Plugin...
+building...
+finished.

@@ -9,9 +9,6 @@
     "forceConsistentCasingInFileNames": true,
     "lib": ["dom", "ES2020"],
     "allowSyntheticDefaultImports": true,
-    "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "src/*": ["./src/*"]
-    }
+    "noFallthroughCasesInSwitch": true
   }
 }

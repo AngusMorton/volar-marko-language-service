@@ -3,3 +3,8 @@ src
 tsconfig.json
 tsconfig.tsbuildinfo
 dist/*.map
+tsconfig.json
+tsconfig.tsbuildinfo
+.turbo
+test
+.vscode-test

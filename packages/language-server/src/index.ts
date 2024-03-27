@@ -1,60 +1,37 @@
-import { markoLanguagePlugin, MarkoCode } from './languagePlugin';
-import { create as createEmmetService } from 'volar-service-emmet';
-import { create as createHtmlService } from 'volar-service-html';
-import { create as createCssService } from 'volar-service-css';
-import { create as createTypeScriptService } from 'volar-service-typescript';
-import { createServer, createConnection, createTypeScriptProjectProvider, Diagnostic, VirtualCode } from '@volar/language-server/node';
+import {
+  createConnection,
+  createServer,
+  createTypeScriptProjectProviderFactory,
+  loadTsdkByPath,
+} from "@volar/language-server/node";
+import { createServerOptions } from "./languageServerPlugin.js";
 
 const connection = createConnection();
 const server = createServer(connection);
 
 connection.listen();
 
-connection.onInitialize(params => {
-	return server.initialize(params, createTypeScriptProjectProvider, {
-		getLanguagePlugins() {
-			return [markoLanguagePlugin];
-		},
-		getServicePlugins() {
-			return [
-				createHtmlService(),
-				createCssService(),
-				createEmmetService(),
-				createTypeScriptService(server.modules.typescript!),
-				{
-					create(context) {
-						return {
-							provideDiagnostics(document) {
-								const virtualCode = context.documents.getVirtualCodeByUri(document.uri)[0] as VirtualCode | MarkoCode | undefined;
-								if (!virtualCode || !('htmlDocument' in virtualCode)) {
-									return;
-								}
-								const styleNodes = virtualCode.htmlDocument.roots.filter(root => root.tag === 'style');
-								if (styleNodes.length <= 1) {
-									return;
-								}
-								const errors: Diagnostic[] = [];
-								for (let i = 1; i < styleNodes.length; i++) {
-									errors.push({
-										severity: 2,
-										range: {
-											start: document.positionAt(styleNodes[i].start),
-											end: document.positionAt(styleNodes[i].end),
-										},
-										source: 'htmljs',
-										message: 'Only one style tag is allowed.',
-									});
-								}
-								return errors;
-							},
-						}
-					},
-				},
-			];
-		},
-	});
+connection.onInitialize((params) => {
+  const tsdk = params.initializationOptions?.typescript?.tsdk;
+
+  if (!tsdk) {
+    throw new Error(
+      "The `typescript.tsdk` init option is required. It should point to a directory containing a `typescript.js` or `tsserverlibrary.js` file, such as `node_modules/typescript/lib`."
+    );
+  }
+
+  const { typescript, diagnosticMessages } = loadTsdkByPath(
+    tsdk,
+    params.locale
+  );
+
+  return server.initialize(
+    params,
+    createTypeScriptProjectProviderFactory(typescript, diagnosticMessages),
+    createServerOptions(connection, typescript)
+  );
 });
 
-connection.onInitialized(server.initialized);
-
-connection.onShutdown(server.shutdown);
+connection.onInitialized(() => {
+  server.initialized();
+});

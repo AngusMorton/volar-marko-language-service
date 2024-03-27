@@ -15,7 +15,7 @@
   "author": "volarjs",
   "publisher": "volarjs",
   "engines": {
-    "vscode": "^1.82.0"
+    "vscode": "^1.87.0"
   },
   "activationEvents": [
     "onLanguage:marko"
@@ -33,6 +33,12 @@
           ".marko"
         ],
         "configuration": "./marko.configuration.json"
+      }
+    ],
+    "typescriptServerPlugins": [
+      {
+        "name": "marko-ts-plugin",
+        "enableForWorkspaceTypeScriptVersions": true
       }
     ],
     "grammars": [
@@ -65,17 +71,19 @@
   },
   "scripts": {
     "build": "node scripts/build -- --minify",
-    "watch": "npm run build -- --watch",
-    "pack": "npm run build && vsce package --pre-release",
+    "dev": "npm run build -- --watch",
+    "pack": "vsce package",
     "release": "npm run build && vsce publish --pre-release"
   },
   "devDependencies": {
+    "@types/vscode": "^1.87.0",
+    "@volar/language-server": "~2.1.5",
+    "@volar/vscode": "~2.1.5",
+    "esbuild": "^0.20.2",
+    "esbuild-plugin-copy": "^2.1.1",
     "marko-language-server": "workspace:*",
-    "@types/vscode": "^1.82.0",
-    "@volar/language-server": "~2.0.0",
-    "@volar/vscode": "~2.0.0",
-    "esbuild": "latest",
-    "vsce": "latest",
+    "marko-ts-plugin": "workspace:*",
+    "@vscode/vsce": "^2.24.0",
     "vscode-languageclient": "^9.0.1"
   }
 }
