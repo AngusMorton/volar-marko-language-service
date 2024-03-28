@@ -4,12 +4,14 @@ import {
   type LanguagePlugin,
   type VirtualCode,
 } from "@volar/language-core";
-import { getMarkoVirtualFile } from "./getMarkoVirtualFile";
+import { parseScripts } from "./parseScript";
 import { URI } from "vscode-uri";
 import type ts from "typescript";
-import path from "path";
+import path, { dirname } from "path";
 import type TS from "typescript/lib/tsserverlibrary";
 import type { PackageInfo } from "../util/importPackage";
+import { Project, parse } from "@marko/language-tools";
+import { parseStyles } from "./parseStyles";
 
 export function getLanguageModule(
   markoInstallInfo: PackageInfo,
@@ -74,42 +76,6 @@ export function getLanguageModule(
               );
             }
 
-            // const resolveTypeCompilerOptions: TS.CompilerOptions = {
-            //   moduleResolution: ts.ModuleResolutionKind.Bundler,
-            // };
-            // const markoRunGeneratedTypesFile = path.join(
-            //   rootDir,
-            //   ".marko-run/routes.d.ts"
-            // );
-            // const resolveFromFile = path.join(rootDir, "_.d.ts");
-            // const internalTypesFile =
-            //   defaultTypeLibs.internalTypesFile ||
-            //   ts.resolveTypeReferenceDirective(
-            //     "@marko/language-tools/marko.internal.d.ts",
-            //     resolveFromFile,
-            //     resolveTypeCompilerOptions,
-            //     host
-            //   ).resolvedTypeReferenceDirective?.resolvedFileName;
-            // const { resolvedTypeReferenceDirective: resolvedMarkoTypes } =
-            //   ts.resolveTypeReferenceDirective(
-            //     (config.translator.runtimeTypes as string | undefined) ||
-            //       "marko",
-            //     resolveFromFile,
-            //     resolveTypeCompilerOptions,
-            //     host
-            //   );
-            // const { resolvedTypeReferenceDirective: resolvedMarkoRunTypes } =
-            //   ts.resolveTypeReferenceDirective(
-            //     "@marko/run",
-            //     resolveFromFile,
-            //     resolveTypeCompilerOptions,
-            //     host
-            //   );
-            // const markoTypesFile =
-            //   resolvedMarkoTypes?.resolvedFileName ||
-            //   defaultTypeLibs.markoTypesFile;
-            // const markoRunTypesFile = resolvedMarkoRunTypes?.resolvedFileName;
-
             return [...host.getScriptFileNames(), ...addedFileNames];
           },
         };
@@ -157,12 +123,14 @@ export class MarkoVirtualCode implements VirtualCode {
 
     this.embeddedCodes = [];
 
-    const virtualCode = getMarkoVirtualFile(
-      this.fileName,
-      this.snapshot.getText(0, this.snapshot.getLength()),
-      this.ts
-    );
+    const dirname = path.dirname(this.fileName);
+    const tagLookup = Project.getTagLookup(dirname);
+    const text = this.snapshot.getText(0, this.snapshot.getLength());
+    const markoAst = parse(text);
+    const scripts = parseScripts(this.fileName, markoAst, this.ts, tagLookup);
+    this.embeddedCodes.push(scripts);
 
-    this.embeddedCodes.push(virtualCode);
+    const styles = parseStyles(this.fileName, markoAst, tagLookup);
+    this.embeddedCodes.push(...styles);
   }
 }

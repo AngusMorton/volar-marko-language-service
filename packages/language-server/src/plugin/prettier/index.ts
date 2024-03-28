@@ -5,6 +5,9 @@ import { ShowMessageNotification } from "@volar/language-server";
 import { MessageType } from "@volar/language-server";
 import { URI } from "vscode-uri";
 import type { ServicePlugin } from "@volar/language-server";
+import { dynamicRequire } from "../../util/importPackage";
+import { dirname } from "path";
+import { Project } from "@marko/language-tools";
 
 export function getMarkoPrettierService(connection: Connection): ServicePlugin {
   let prettier: ReturnType<typeof importPrettier>;
@@ -14,6 +17,7 @@ export function getMarkoPrettierService(connection: Connection): ServicePlugin {
 
   return createPrettierService(
     (context) => {
+      console.log("Looking for Prettier in", context.env.workspaceFolder);
       const workspaceUri = URI.parse(context.env.workspaceFolder);
       if (workspaceUri.scheme === "file") {
         prettier = importPrettier(workspaceUri.fsPath);
@@ -34,14 +38,30 @@ export function getMarkoPrettierService(connection: Connection): ServicePlugin {
     },
     {
       documentSelector: [{ language: "marko" }],
+      isFormattingEnabled: async (prettier, document, context) => {
+        console.log("Is Formatting Enabled");
+        const uri = URI.parse(document.uri);
+        if (uri.scheme === "file") {
+          const fileInfo = await prettier.getFileInfo(uri.fsPath, {
+            ignorePath: ".prettierignore",
+            resolveConfig: false,
+          });
+          if (fileInfo.ignored) {
+            return false;
+          }
+        }
+        return true;
+      },
       getFormattingOptions: async (
         prettierInstance,
         document,
         formatOptions,
         context
       ) => {
+        console.log("Getting formatting options");
+        console.log(document.uri);
         const filePath = URI.parse(document.uri).fsPath;
-
+        const fileDir = dirname(filePath);
         let configOptions = null;
         try {
           configOptions = await prettierInstance.resolveConfig(filePath, {
@@ -73,35 +93,35 @@ export function getMarkoPrettierService(connection: Connection): ServicePlugin {
           ...configOptions,
         };
 
-        console.log("config", {
-          ...resolvedConfig,
-          plugins: [
-            ...(await getMarkoPrettierPlugin()),
-            ...(resolvedConfig.plugins ?? []),
-          ],
-          parser: "marko",
-        });
+        try {
+          let resolvedPlugin;
+          if (prettierPluginPath) {
+            resolvedPlugin = dynamicRequire(prettierPluginPath);
 
-        return {
-          ...resolvedConfig,
-          plugins: [
-            ...(await getMarkoPrettierPlugin()),
-            ...(resolvedConfig.plugins ?? []),
-          ],
-          parser: "marko",
-        };
-
-        async function getMarkoPrettierPlugin() {
-          if (!prettier || !prettierPluginPath || !prettierPluginName) {
-            return [];
+            resolvedPlugin.setCompiler(
+              Project.getCompiler(fileDir),
+              Project.getConfig(fileDir)
+            );
+          } else {
+            // Fallback to the built-in version of marko-prettier-plugin if the workspace doesn't have it installed.
+            // resolvedPlugin = markoPrettier;
+            throw Error("prettier-plugin-marko not found.");
           }
 
-          const supportInfo = await prettier.getSupportInfo();
-          const hasPluginLoadedAlready =
-            supportInfo.languages.some((l: any) => l.name === "marko") ||
-            resolvedConfig.plugins?.includes(prettierPluginName); // getSupportInfo doesn't seems to work very well in Prettier 3 for plugins
-
-          return hasPluginLoadedAlready ? [] : [prettierPluginPath];
+          return {
+            ...resolvedConfig,
+            plugins: [resolvedPlugin, ...(resolvedConfig.plugins ?? [])],
+            parser: "marko",
+          };
+        } catch (e) {
+          connection.sendNotification(ShowMessageNotification.type, {
+            message: `Failed to configure marko-prettier-plugin.\n\nError:\n${e}`,
+            type: MessageType.Warning,
+          });
+          console.error("Failed to load Prettier config.", e);
+          return {
+            ...resolvedConfig,
+          };
         }
       },
     }

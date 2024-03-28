@@ -13,10 +13,9 @@ export function importPrettier(fromPath: string): typeof prettier | undefined {
 
 export function getMarkoPrettierPluginPath(
   fromPath: string
-): [
-  string | undefined,
-  "prettier-plugin-marko" | "prettier-plugin-htmljs" | undefined,
-] {
+):
+  | [string, "prettier-plugin-marko" | "prettier-plugin-htmljs"]
+  | [undefined, undefined] {
   const corePluginPath = getPackagePath(
     "prettier-plugin-marko",
     [fromPath, __dirname],
@@ -30,15 +29,16 @@ export function getMarkoPrettierPluginPath(
 
   // Otherwise, use the htmljs plugin. We might in the future want to make
   // the htmljs version the preferred plugin.
-  const secondaryPlugin = getPackagePath(
-    "prettier-plugin-htmljs",
-    [fromPath, __dirname],
-    false
-  );
+  // const secondaryPlugin = getPackagePath(
+  //   "prettier-plugin-htmljs",
+  //   [fromPath, __dirname],
+  //   false
+  // );
 
-  if (!secondaryPlugin) {
-    return [undefined, undefined];
-  }
+  // if (!secondaryPlugin) {
+  //   return [undefined, undefined];
+  // }
 
-  return [secondaryPlugin, "prettier-plugin-htmljs"];
+  // return [secondaryPlugin, "prettier-plugin-htmljs"];
+  return [undefined, undefined];
 }

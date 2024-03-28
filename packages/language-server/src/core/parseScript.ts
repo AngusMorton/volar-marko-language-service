@@ -10,16 +10,14 @@ import {
 } from "@marko/language-tools";
 import path from "path";
 
-export function getMarkoVirtualFile(
+export function parseScripts(
   fileId: string,
-  text: string,
-  ts: typeof import("typescript")
+  parsed: ReturnType<typeof parse>,
+  ts: typeof import("typescript"),
+  tagLookup: any
 ): VirtualCode {
-  const markoAst = parse(text);
-  const dirname = fileId ? path.dirname(fileId) : process.cwd();
-  const tagLookup = Project.getTagLookup(dirname);
   const script = extractScript({
-    parsed: markoAst,
+    parsed,
     scriptLang: ScriptLang.ts,
     lookup: tagLookup,
     ts: ts,

@@ -26,7 +26,7 @@ export interface PackageInfo {
  * so we can replace its content inside rollup builds
  * so it's not transformed.
  */
-function dynamicRequire(dynamicFileToRequire: string): any {
+export function dynamicRequire(dynamicFileToRequire: string): any {
   // prettier-ignore
   return require(dynamicFileToRequire);
 }

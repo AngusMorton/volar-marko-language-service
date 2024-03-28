@@ -53,13 +53,15 @@ export function createServerOptions(
       return [];
     },
     getServicePlugins() {
-      return [
+      console.log("getServicePlugins");
+      const result = [
         createHtmlService(),
         createCssService(),
         createEmmetService(),
         ...createTypeScriptServices(ts),
         getMarkoPrettierService(connection),
       ];
+      return result;
     },
   };
 }
