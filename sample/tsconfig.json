@@ -1,14 +1,22 @@
 {
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    ".marko-run/**/*",
+  ],
   "compilerOptions": {
-    "strict": true,
-    "target": "ES6",
-    "module": "ESNext",
-    "noEmit": true,
-    "moduleResolution": "node",
-    "forceConsistentCasingInFileNames": true,
-    "lib": ["dom", "ES2020"],
     "allowSyntheticDefaultImports": true,
-    "noFallthroughCasesInSwitch": true
+    "lib": ["dom", "ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "outDir": "dist",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext",
+    "verbatimModuleSyntax": true,
+    "types": ["vite/client", "gtag.js", "googlefc", "google-publisher-tag"]
   }
 }

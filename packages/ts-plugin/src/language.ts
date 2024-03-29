@@ -5,7 +5,9 @@ import {
   type VirtualCode,
 } from "@volar/language-core";
 import type ts from "typescript";
-import { getMarkoVirtualFile } from "./getMarkoVirtualFile";
+import path from "path";
+import { Project, parse } from "@marko/language-tools";
+import { parseScripts } from "./parseScript";
 
 export function getLanguageModule(
   ts: typeof import("typescript")
@@ -34,6 +36,33 @@ export function getLanguageModule(
             };
           }
         }
+      },
+      resolveLanguageServiceHost(host) {
+        return {
+          ...host,
+          getScriptFileNames() {
+            const addedFileNames = [];
+
+            const builtInTypes = ts.sys.resolvePath(
+              path.resolve(__dirname, "./types")
+            );
+            addedFileNames.push(
+              ts.sys.resolvePath(
+                path.resolve(builtInTypes, "marko.internal.d.ts")
+              )
+            );
+
+            // These are a copy of the types defined in the marko project for
+            // when we can't find a marko install.
+            addedFileNames.push(
+              ts.sys.resolvePath(
+                path.resolve(builtInTypes, "marko.runtime.d.ts")
+              )
+            );
+
+            return [...host.getScriptFileNames(), ...addedFileNames];
+          },
+        };
       },
     },
   };
@@ -78,12 +107,11 @@ export class MarkoVirtualCode implements VirtualCode {
 
     this.embeddedCodes = [];
 
-    const virtualCode = getMarkoVirtualFile(
-      this.fileName,
-      this.snapshot.getText(0, this.snapshot.getLength()),
-      this.ts
-    );
-
-    this.embeddedCodes.push(virtualCode);
+    const dirname = path.dirname(this.fileName);
+    const tagLookup = Project.getTagLookup(dirname);
+    const text = this.snapshot.getText(0, this.snapshot.getLength());
+    const markoAst = parse(text, this.fileName);
+    const scripts = parseScripts(this.fileName, markoAst, this.ts, tagLookup);
+    this.embeddedCodes.push(...scripts);
   }
 }

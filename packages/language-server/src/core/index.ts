@@ -8,10 +8,12 @@ import { parseScripts } from "./parseScript";
 import { URI } from "vscode-uri";
 import type ts from "typescript";
 import path, { dirname } from "path";
-import type TS from "typescript/lib/tsserverlibrary";
 import type { PackageInfo } from "../util/importPackage";
 import { Project, parse } from "@marko/language-tools";
+import type { MarkoMeta } from "@marko/compiler";
 import { parseStyles } from "./parseStyles";
+import { parseHtml } from "./parseHtml";
+import { DiagnosticType } from "@marko/babel-utils";
 
 export function getLanguageModule(
   markoInstallInfo: PackageInfo,
@@ -23,7 +25,6 @@ export function getLanguageModule(
         const fileName = fileId.includes("://")
           ? URI.parse(fileId).fsPath.replace(/\\/g, "/")
           : fileId;
-        console.log("Creating Virtual Code", fileName);
         return new MarkoVirtualCode(fileName, snapshot, ts);
       }
     },
@@ -89,6 +90,13 @@ export class MarkoVirtualCode implements VirtualCode {
   languageId = "marko";
   mappings!: CodeMapping[];
   embeddedCodes!: VirtualCode[];
+  parserDiagnostics: {
+    message: string;
+    start: number;
+    end: number;
+    code: number;
+  }[] = [];
+  compilerDiagnostics: MarkoMeta["diagnostics"] = [];
   codegenStacks = [];
 
   constructor(
@@ -116,7 +124,7 @@ export class MarkoVirtualCode implements VirtualCode {
           semantic: true,
           navigation: true,
           structure: true,
-          format: false,
+          format: true,
         },
       },
     ];
@@ -126,11 +134,57 @@ export class MarkoVirtualCode implements VirtualCode {
     const dirname = path.dirname(this.fileName);
     const tagLookup = Project.getTagLookup(dirname);
     const text = this.snapshot.getText(0, this.snapshot.getLength());
-    const markoAst = parse(text);
+    const markoAst = parse(text, this.fileName);
+    // TODO: Fork @marko/language-tools?
+    this.parserDiagnostics = markoAst.errors ?? [];
+
     const scripts = parseScripts(this.fileName, markoAst, this.ts, tagLookup);
-    this.embeddedCodes.push(scripts);
+    this.embeddedCodes.push(...scripts);
 
     const styles = parseStyles(this.fileName, markoAst, tagLookup);
     this.embeddedCodes.push(...styles);
+
+    const html = parseHtml(markoAst);
+    this.embeddedCodes.push(...html);
+
+    const compiler = Project.getCompiler(this.fileName);
+    try {
+      const result = compiler.compileSync(text, this.fileName, compilerConfig);
+      this.compilerDiagnostics = result.meta.diagnostics ?? [];
+    } catch (e: any) {
+      if (this.parserDiagnostics.length === 0) {
+        // The parser didn't find any errors, so this is likely a compiler error.
+        this.compilerDiagnostics = [
+          {
+            type: DiagnosticType.Error,
+            label: "The Marko Compiler encountered an error. " + e.message,
+            fix: false,
+            loc: {
+              start: { line: 0, column: 0 },
+              end: { line: 0, column: 0 },
+            },
+          },
+        ];
+      }
+    }
   }
 }
+
+const compilerConfig = {
+  code: false,
+  output: "migrate",
+  sourceMaps: false,
+  errorRecovery: true,
+  babelConfig: {
+    babelrc: false,
+    configFile: false,
+    browserslistConfigFile: false,
+    caller: {
+      name: "@marko/language-server",
+      supportsStaticESM: true,
+      supportsDynamicImport: true,
+      supportsTopLevelAwait: true,
+      supportsExportNamespaceFrom: true,
+    },
+  },
+} as const;

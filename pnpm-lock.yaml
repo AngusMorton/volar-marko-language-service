@@ -10,7 +10,7 @@ overrides:
 
 patchedDependencies:
   '@marko/language-tools@2.2.6':
-    hash: i5mor2cprdfoj4facz2yvqh32m
+    hash: nie3mtyr6b2inxfcee7ulmgflu
     path: patches/@marko__language-tools@2.2.6.patch
 
 importers:
@@ -32,9 +32,18 @@ importers:
 
   packages/language-server:
     dependencies:
+      '@babel/preset-typescript':
+        specifier: ^7.24.1
+        version: 7.24.1(@babel/core@7.24.3)
+      '@marko/babel-utils':
+        specifier: ^6.4.2
+        version: 6.4.2
+      '@marko/compiler':
+        specifier: ^5.35.9
+        version: 5.35.9
       '@marko/language-tools':
         specifier: ^2.2.6
-        version: 2.2.6(patch_hash=i5mor2cprdfoj4facz2yvqh32m)(@marko/compiler@5.35.8)
+        version: 2.2.6(patch_hash=nie3mtyr6b2inxfcee7ulmgflu)(@marko/compiler@5.35.9)
       '@volar/language-core':
         specifier: 2.1.5
         version: 2.1.5
@@ -86,7 +95,7 @@ importers:
     dependencies:
       '@marko/language-tools':
         specifier: ^2.2.6
-        version: 2.2.6(patch_hash=i5mor2cprdfoj4facz2yvqh32m)(@marko/compiler@5.35.8)
+        version: 2.2.6(patch_hash=nie3mtyr6b2inxfcee7ulmgflu)(@marko/compiler@5.35.9)
       '@volar/language-core':
         specifier: ~2.1.5
         version: 2.1.5
@@ -359,6 +368,16 @@ packages:
       '@babel/types': 7.24.0
     dev: false
 
+  /@babel/plugin-syntax-jsx@7.24.1(@babel/core@7.24.3):
+    resolution: {integrity: sha512-2eCtxZXf+kbkMIsXS4poTvT4Yu5rXiRa+9xGVT56raghjmBTKMpFNc9R4IDiB4emao9eO22Ox7CxuJG7BgExqA==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+    dependencies:
+      '@babel/core': 7.24.3
+      '@babel/helper-plugin-utils': 7.24.0
+    dev: false
+
   /@babel/plugin-syntax-typescript@7.24.1(@babel/core@7.24.3):
     resolution: {integrity: sha512-Yhnmvy5HZEnHUty6i++gcfH1/l68AHnItFHnaCv6hn9dNh0hQvvQJsxpi4BMBFN5DLeHBuucT/0DgzXif/OyRw==}
     engines: {node: '>=6.9.0'}
@@ -392,6 +411,20 @@ packages:
       '@babel/helper-create-class-features-plugin': 7.24.1(@babel/core@7.24.3)
       '@babel/helper-plugin-utils': 7.24.0
       '@babel/plugin-syntax-typescript': 7.24.1(@babel/core@7.24.3)
+    dev: false
+
+  /@babel/preset-typescript@7.24.1(@babel/core@7.24.3):
+    resolution: {integrity: sha512-1DBaMmRDpuYQBPWD8Pf/WEwCrtgRHxsZnP4mIy9G/X+hFfbI47Q2G4t1Paakld84+qsk2fSsUPMKg71jkoOOaQ==}
+    engines: {node: '>=6.9.0'}
+    peerDependencies:
+      '@babel/core': ^7.0.0-0
+    dependencies:
+      '@babel/core': 7.24.3
+      '@babel/helper-plugin-utils': 7.24.0
+      '@babel/helper-validator-option': 7.23.5
+      '@babel/plugin-syntax-jsx': 7.24.1(@babel/core@7.24.3)
+      '@babel/plugin-transform-modules-commonjs': 7.24.1(@babel/core@7.24.3)
+      '@babel/plugin-transform-typescript': 7.24.1(@babel/core@7.24.3)
     dev: false
 
   /@babel/runtime@7.24.1:
@@ -703,8 +736,8 @@ packages:
       relative-import-path: 1.0.0
     dev: false
 
-  /@marko/compiler@5.35.8:
-    resolution: {integrity: sha512-cGVVxd4Z/+NhIBgsDxiyaL0y2NAURyL4rQ0E7KcS/DGSMo6qCMRFtMOfDwW4NnqXu2Q2CBU3SfsNcuV1E+IXHQ==}
+  /@marko/compiler@5.35.9:
+    resolution: {integrity: sha512-um+qqcRYcOSiCYchYV0UTy9RMdzWKR/p4QjboLDq7qpjfTfJT5j3lzPDLkB26fk/jTVQQSzARuNdbRRJfJVO9Q==}
     dependencies:
       '@babel/code-frame': 7.24.2
       '@babel/core': 7.24.3
@@ -733,7 +766,7 @@ packages:
       - supports-color
     dev: false
 
-  /@marko/language-tools@2.2.6(patch_hash=i5mor2cprdfoj4facz2yvqh32m)(@marko/compiler@5.35.8):
+  /@marko/language-tools@2.2.6(patch_hash=nie3mtyr6b2inxfcee7ulmgflu)(@marko/compiler@5.35.9):
     resolution: {integrity: sha512-RiseODTE5N+EVYNYgFEjBDE2vZ8Pu3DePIg/TS3gL192KGc72DuD0SMYxxoOm7kyB5CQJW6J772b40VRflaH4Q==}
     peerDependencies:
       '@marko/compiler': ^5.28.4
@@ -741,13 +774,13 @@ packages:
       '@babel/helper-validator-identifier': 7.22.20
       '@babel/parser': 7.24.1
       '@luxass/strip-json-comments': 1.2.0
-      '@marko/compiler': 5.35.8
+      '@marko/compiler': 5.35.9
       htmljs-parser: 5.5.2
       relative-import-path: 1.0.0
     dev: false
     patched: true
 
-  /@marko/translator-default@5.32.9(@marko/compiler@5.35.8)(marko@5.33.10):
+  /@marko/translator-default@5.32.9(@marko/compiler@5.35.9)(marko@5.33.10):
     resolution: {integrity: sha512-Kv0psEYdQoBpuI+5eRCsWUJLu00oDMgLVTcNxkeEOzOkAp6kMEOG/dFvLONgxd3PWHxS9Nipmt9Rf7tlD2+QiQ==}
     peerDependencies:
       '@marko/compiler': ^5.16.1
@@ -755,7 +788,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.24.1
       '@marko/babel-utils': 6.4.2
-      '@marko/compiler': 5.35.8
+      '@marko/compiler': 5.35.9
       magic-string: 0.30.8
       marko: 5.33.10
       self-closing-tags: 1.0.1
@@ -1707,8 +1740,8 @@ packages:
     resolution: {integrity: sha512-QstWW6I1FLQ6yWWqxqlQRZEeJ5ifywuzEFVp1gFSM3aLbZ81LQ1IonxvfBByBB2UhVElfrbjELlnl6yl8+dD8g==}
     hasBin: true
     dependencies:
-      '@marko/compiler': 5.35.8
-      '@marko/translator-default': 5.32.9(@marko/compiler@5.35.8)(marko@5.33.10)
+      '@marko/compiler': 5.35.9
+      '@marko/translator-default': 5.32.9(@marko/compiler@5.35.9)(marko@5.33.10)
       app-module-path: 2.2.0
       argly: 1.2.0
       browser-refresh-client: 1.1.4

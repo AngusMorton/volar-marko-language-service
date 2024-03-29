@@ -1,0 +1,66 @@
+$ console.log("I'm in a scriptlet");
+static const banana = 5;
+$ const apple = "test";
+<div>
+    $ console.log("I'm a nested scriptlet");
+    <h1>I'm being edited in Volar</h1>
+    <div>I can render scriptlets and stuff: ${apple}.</div>
+    <h2>${component.state.something}</h2>
+    <if(banana)>
+        <div>Something is true</div>
+    </if>
+    <my-let/>
+
+    <for|colour| of=["green", "blue", "red", banana, apple]>
+        <h3 on-click="clickMe">
+            ${colour}
+        </h3>
+    </for>
+</div>
+style {
+    /* Latin */
+    @font-face {
+        font-family: "Roboto";
+        font-style: normal;
+        font-display: swap;
+        font-weight: 300;
+        src:
+            local("Roboto Light"),
+            local("Roboto-Light"),
+            url("./roboto-latin-300.woff2") format("woff2");
+    }
+}
+style {
+    @font-face {
+        font-family: "Roboto";
+        font-style: normal;
+        font-display: swap;
+        font-weight: 300;
+        src:
+            local("Roboto Light"),
+            local("Roboto-Light"),
+            url("./roboto-latin-300.woff2") format("woff2");
+    }
+
+    @font-face {
+        font-family: "Roboto";
+        font-style: normal;
+        font-display: swap;
+        font-weight: 400;
+        src:
+            local("Roboto"),
+            local("Roboto-Regular"),
+            url("./roboto-latin-400.woff2") format("woff2");
+    }
+
+    @font-face {
+        font-family: "Roboto";
+        font-style: normal;
+        font-display: swap;
+        font-weight: 500;
+        src:
+            local("Roboto Medium"),
+            local("Roboto-Medium"),
+            url("./roboto-latin-500.woff2") format("woff2");
+    }
+}

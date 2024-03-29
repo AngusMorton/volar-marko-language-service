@@ -1,0 +1,14 @@
+<if(component.state.gaProperty !== undefined)>
+  <if(component.state.wasGivenConsent)>
+    $ console.log("Was given consent");
+    <script async src=`test post pls ignore${component.state.gaProperty}`/>
+  </if>
+  <!-- For consent purposes, we only add the script once we're sure the user has consented. See google-analytics-script.component-browser.ts -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+  </script>
+</if>

@@ -1,35 +1,18 @@
 import type { CodeMapping, VirtualCode } from "@volar/language-core";
-import {
-  parse,
-  extractScript,
-  ScriptLang,
-  Project,
-  NodeType,
-  Node,
-  Range,
-} from "@marko/language-tools";
-import path from "path";
+import { parse, extractScript, extractHTML } from "@marko/language-tools";
 
-export function parseScripts(
-  fileId: string,
-  parsed: ReturnType<typeof parse>,
-  ts: typeof import("typescript"),
-  tagLookup: any
-): VirtualCode[] {
-  const script = extractScript({
-    parsed,
-    scriptLang: ScriptLang.ts,
-    lookup: tagLookup,
-    ts: ts,
-  });
-  const scriptText = script.toString();
-  const mappings: CodeMapping[] = generateMappingsFromExtracted(script);
+export function parseHtml(parsed: ReturnType<typeof parse>): VirtualCode[] {
+  const script = extractHTML(parsed);
+  const scriptText = script.extracted.toString();
+  const mappings: CodeMapping[] = generateMappingsFromExtracted(
+    script.extracted
+  );
 
   if (mappings.length > 0) {
     return [
       {
-        id: "script",
-        languageId: "typescript",
+        id: "html",
+        languageId: "html",
         snapshot: {
           getText: (start, end) => scriptText.substring(start, end),
           getLength: () => scriptText.length,

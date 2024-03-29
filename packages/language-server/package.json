@@ -17,6 +17,9 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
+    "@babel/preset-typescript": "^7.24.1",
+    "@marko/babel-utils": "^6.4.2",
+    "@marko/compiler": "^5.35.9",
     "@marko/language-tools": "^2.2.6",
     "@volar/language-core": "2.1.5",
     "@volar/language-server": "2.1.5",
@@ -27,8 +30,8 @@
     "volar-service-css": "volar-2.1",
     "volar-service-emmet": "volar-2.1",
     "volar-service-html": "volar-2.1",
-    "volar-service-typescript": "volar-2.1",
     "volar-service-prettier": "volar-2.1",
+    "volar-service-typescript": "volar-2.1",
     "vscode-html-languageservice": "^5.2.0",
     "vscode-uri": "^3.0.8"
   },

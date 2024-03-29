@@ -9,14 +9,18 @@ export function parseStyles(
 ): VirtualCode[] {
   const styles = extractStyle({ parsed, lookup: taglib });
 
-  let styleCount = 0;
   const result = [];
   for (const [key, style] of styles.entries()) {
-    console.log(key, style);
     const styleText = style.toString();
+    const stylesheetKey = key.slice(1);
+
+    const languageId =
+      stylesheetKey === "scss" || stylesheetKey === "less"
+        ? stylesheetKey
+        : "css";
     result.push({
-      id: `style_${styleCount++}`,
-      languageId: "css",
+      id: `style_${key.slice(1)}`,
+      languageId,
       snapshot: {
         getText: (start, end) => styleText.substring(start, end),
         getLength: () => styleText.length,
@@ -38,7 +42,7 @@ function generateMappingsFromExtracted(extracted: Extracted): CodeMapping[] {
       lengths: [it.length],
       data: {
         completion: true,
-        format: true,
+        format: false,
         navigation: true,
         semantic: true,
         structure: true,

@@ -8,6 +8,7 @@ import { create as createEmmetService } from "volar-service-emmet";
 import { create as createHtmlService } from "volar-service-html";
 import { create as createCssService } from "volar-service-css";
 import { create as createTypeScriptServices } from "volar-service-typescript";
+import { create as createMarkoService } from "./plugin/marko";
 import type { ServerOptions } from "@volar/language-server/lib/server";
 import { getLanguageModule } from "./core";
 import { getMarkoInstall } from "./util/getMarkoInstall";
@@ -59,6 +60,7 @@ export function createServerOptions(
         createCssService(),
         createEmmetService(),
         ...createTypeScriptServices(ts),
+        createMarkoService(ts),
         getMarkoPrettierService(connection),
       ];
       return result;

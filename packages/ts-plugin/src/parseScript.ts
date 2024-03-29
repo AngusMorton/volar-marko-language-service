@@ -4,20 +4,19 @@ import {
   extractScript,
   ScriptLang,
   Project,
+  NodeType,
+  Node,
+  Range,
 } from "@marko/language-tools";
-import path from "path";
 
-export function getMarkoVirtualFile(
+export function parseScripts(
   fileId: string,
-  text: string,
-  ts: typeof import("typescript")
-): VirtualCode {
-  console.log("TypeScript Plugin: Parsing file:", fileId);
-  const markoAst = parse(text);
-  const dirname = fileId ? path.dirname(fileId) : process.cwd();
-  const tagLookup = Project.getTagLookup(dirname);
+  parsed: ReturnType<typeof parse>,
+  ts: typeof import("typescript"),
+  tagLookup: any
+): VirtualCode[] {
   const script = extractScript({
-    parsed: markoAst,
+    parsed,
     scriptLang: ScriptLang.ts,
     lookup: tagLookup,
     ts: ts,
@@ -25,17 +24,23 @@ export function getMarkoVirtualFile(
   const scriptText = script.toString();
   const mappings: CodeMapping[] = generateMappingsFromExtracted(script);
 
-  return {
-    id: "script",
-    languageId: "typescript",
-    snapshot: {
-      getText: (start, end) => scriptText.substring(start, end),
-      getLength: () => scriptText.length,
-      getChangeRange: () => undefined,
-    },
-    mappings: mappings,
-    embeddedCodes: [],
-  };
+  if (mappings.length > 0) {
+    return [
+      {
+        id: "script",
+        languageId: "typescript",
+        snapshot: {
+          getText: (start, end) => scriptText.substring(start, end),
+          getLength: () => scriptText.length,
+          getChangeRange: () => undefined,
+        },
+        mappings: mappings,
+        embeddedCodes: [],
+      },
+    ];
+  }
+
+  return [];
 }
 
 function generateMappingsFromExtracted(
@@ -48,7 +53,7 @@ function generateMappingsFromExtracted(
       lengths: [it.length],
       data: {
         completion: true,
-        format: true,
+        format: false,
         navigation: true,
         semantic: true,
         structure: true,
