@@ -1,11 +1,5 @@
 {
-  "name": "marko-molar",
-  "version": "0.0.1",
-  "private": true,
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/volarjs/starter.git"
-  },
+  "name": "volar-marko-language-service-repository",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel --no-cache"
@@ -17,8 +11,8 @@
     "prettier": "^3.2.5"
   },
   "resolutions": {
-    "@volar/language-server": "2.1.5",
-    "@volar/language-service": "2.1.5"
+    "@volar/language-server": "2.4.0-alpha.18",
+    "@volar/vscode": "2.4.0-alpha.18"
   },
   "pnpm": {
     "patchedDependencies": {

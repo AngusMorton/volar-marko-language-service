@@ -1,7 +1,14 @@
 {
   "name": "marko-language-server",
   "version": "0.0.1",
+  "description": "A TypeScript Plugin providing Marko intellisense",
+  "author": "AngusMorton",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AngusMorton/volar-marko-language-service.git",
+    "directory": "packages/language-server"
+  },
   "main": "dist/index.js",
   "files": [
     "bin",
@@ -21,21 +28,24 @@
     "@marko/babel-utils": "^6.4.2",
     "@marko/compiler": "^5.35.9",
     "@marko/language-tools": "^2.2.6",
-    "@volar/language-core": "2.1.5",
-    "@volar/language-server": "2.1.5",
-    "@volar/language-service": "2.1.5",
-    "@volar/typescript": "2.1.5",
+    "@volar/kit": "~2.4.0-alpha.18",
+    "@volar/language-core": "~2.4.0-alpha.18",
+    "@volar/language-server": "~2.4.0-alpha.18",
+    "@volar/language-service": "~2.4.0-alpha.18",
+    "@volar/typescript": "~2.4.0-alpha.18",
     "htmljs-parser": "^5.5.2",
     "marko": "^5.33.10",
-    "volar-service-css": "volar-2.1",
-    "volar-service-emmet": "volar-2.1",
-    "volar-service-html": "volar-2.1",
-    "volar-service-prettier": "volar-2.1",
-    "volar-service-typescript": "volar-2.1",
+    "volar-service-css": "volar-2.4",
+    "volar-service-emmet": "volar-2.4",
+    "volar-service-html": "volar-2.4",
+    "volar-service-prettier": "volar-2.4",
+    "volar-service-typescript": "volar-2.4",
+    "volar-service-typescript-twoslash-queries": "^0.0.59",
     "vscode-html-languageservice": "^5.2.0",
     "vscode-uri": "^3.0.8"
   },
   "devDependencies": {
+    "@volar/test-utils": "~2.4.0-alpha.18",
     "prettier": "^3.2.5",
     "typescript": "^5.2.2"
   }

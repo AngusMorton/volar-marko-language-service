@@ -1,15 +1,16 @@
 import { create as createPrettierService } from "volar-service-prettier";
 import { getMarkoPrettierPluginPath, importPrettier } from "./package";
-import type { Connection } from "@volar/language-server";
+import type { Connection, LanguageServicePlugin } from "@volar/language-server";
 import { ShowMessageNotification } from "@volar/language-server";
 import { MessageType } from "@volar/language-server";
 import { URI } from "vscode-uri";
-import type { ServicePlugin } from "@volar/language-server";
 import { dynamicRequire } from "../../util/importPackage";
 import { dirname } from "path";
 import { Project } from "@marko/language-tools";
 
-export function getMarkoPrettierService(connection: Connection): ServicePlugin {
+export function getMarkoPrettierService(
+  connection: Connection
+): LanguageServicePlugin {
   let prettier: ReturnType<typeof importPrettier>;
   let prettierPluginName: ReturnType<typeof getMarkoPrettierPluginPath>[1];
   let prettierPluginPath: ReturnType<typeof getMarkoPrettierPluginPath>[0];
@@ -17,21 +18,21 @@ export function getMarkoPrettierService(connection: Connection): ServicePlugin {
 
   return createPrettierService(
     (context) => {
-      console.log("Looking for Prettier in", context.env.workspaceFolder);
-      const workspaceUri = URI.parse(context.env.workspaceFolder);
-      if (workspaceUri.scheme === "file") {
-        prettier = importPrettier(workspaceUri.fsPath);
-        const [path, pluginName] =
-          getMarkoPrettierPluginPath(workspaceUri.fsPath) ?? [];
-        prettierPluginPath = path;
-        prettierPluginName = pluginName;
-        if ((!prettier || !prettierPluginPath) && !hasShownNotification) {
-          connection.sendNotification(ShowMessageNotification.type, {
-            message:
-              "Couldn't load `prettier` or `prettier-plugin-marko`/`prettier-plugin-htmljs`. Formatting will not work. Please make sure those two packages are installed into your project and restart the language server.",
-            type: MessageType.Warning,
-          });
-          hasShownNotification = true;
+      for (const workspaceFolder of context.env.workspaceFolders) {
+        if (workspaceFolder.scheme === "file") {
+          prettier = importPrettier(workspaceFolder.fsPath);
+          const [path, pluginName] =
+            getMarkoPrettierPluginPath(workspaceFolder.fsPath) ?? [];
+          prettierPluginPath = path;
+          prettierPluginName = pluginName;
+          if ((!prettier || !prettierPluginPath) && !hasShownNotification) {
+            connection.sendNotification(ShowMessageNotification.type, {
+              message:
+                "Couldn't load `prettier` or `prettier-plugin-marko`/`prettier-plugin-htmljs`. Formatting will not work. Please make sure those two packages are installed into your project and restart the language server.",
+              type: MessageType.Warning,
+            });
+            hasShownNotification = true;
+          }
         }
         return prettier;
       }
@@ -39,7 +40,6 @@ export function getMarkoPrettierService(connection: Connection): ServicePlugin {
     {
       documentSelector: [{ language: "marko" }],
       isFormattingEnabled: async (prettier, document, context) => {
-        console.log("Is Formatting Enabled");
         const uri = URI.parse(document.uri);
         if (uri.scheme === "file") {
           const fileInfo = await prettier.getFileInfo(uri.fsPath, {
@@ -58,8 +58,6 @@ export function getMarkoPrettierService(connection: Connection): ServicePlugin {
         formatOptions,
         context
       ) => {
-        console.log("Getting formatting options");
-        console.log(document.uri);
         const filePath = URI.parse(document.uri).fsPath;
         const fileDir = dirname(filePath);
         let configOptions = null;

@@ -1,33 +1,92 @@
 import {
   Diagnostic,
-  ServicePlugin,
-  ServicePluginInstance,
   DiagnosticSeverity,
+  LanguageServicePlugin,
+  LanguageServicePluginInstance,
 } from "@volar/language-server";
 import { DiagnosticType } from "@marko/babel-utils";
 import { MarkoVirtualCode } from "../../core/index.js";
 import type { MarkoMeta } from "@marko/compiler";
+import { NodeType } from "@marko/language-tools";
+import { getOpenTagNameCompletions } from "./completion/getOpenTagNameCompletions.js";
+import { getTagCompletion } from "./completion/getTagCompletion.js";
+import { URI } from "vscode-uri";
 type DiagnosticMessage = MarkoMeta["diagnostics"][0];
 
-export const create = (ts: typeof import("typescript")): ServicePlugin => {
+export const create = (
+  ts: typeof import("typescript")
+): LanguageServicePlugin => {
   return {
-    triggerCharacters: ["<"],
-    create(context): ServicePluginInstance {
+    capabilities: {
+      completionProvider: {
+        triggerCharacters: ["<", " "],
+      },
+      diagnosticProvider: {},
+      codeLensProvider: {},
+    },
+    create(context): LanguageServicePluginInstance {
       return {
+        provideCompletionItems(document, position, completionContext, token) {
+          if (token.isCancellationRequested) return;
+
+          const decoded = context.decodeEmbeddedDocumentUri(
+            URI.parse(document.uri)
+          );
+          const sourceScript =
+            decoded && context.language.scripts.get(decoded[0]);
+          const virtualCode =
+            decoded && sourceScript?.generated?.embeddedCodes.get(decoded[1]);
+          if (!(virtualCode instanceof MarkoVirtualCode)) return;
+
+          if (completionContext.triggerCharacter === "<") {
+            const node = virtualCode.markoAst.nodeAt(
+              document.offsetAt(position)
+            );
+            if (!node) return;
+
+            if (node.type === NodeType.OpenTagName) {
+              return {
+                items: getOpenTagNameCompletions(node, virtualCode),
+                isIncomplete: false,
+              };
+            } else if (node.type === NodeType.Tag) {
+              return {
+                items: getTagCompletion(
+                  node,
+                  virtualCode,
+                  document.offsetAt(position)
+                ),
+                isIncomplete: false,
+              };
+            }
+          }
+          return {
+            items: [],
+            isIncomplete: false,
+          };
+        },
         provideSemanticDiagnostics(document, token) {
           if (token.isCancellationRequested) return [];
 
-          const [file] = context.documents.getVirtualCodeByUri(document.uri);
-          if (!(file instanceof MarkoVirtualCode)) return;
+          const decoded = context.decodeEmbeddedDocumentUri(
+            URI.parse(document.uri)
+          );
+          const sourceScript =
+            decoded && context.language.scripts.get(decoded[0]);
+          const virtualCode =
+            decoded && sourceScript?.generated?.embeddedCodes.get(decoded[1]);
+          if (!(virtualCode instanceof MarkoVirtualCode)) return;
 
-          const parserDiagnostics = file.parserDiagnostics.map(
+          const parserDiagnostics = virtualCode.parserDiagnostics.map(
             parserMessageToDiagnostic
           );
-          const compilerDiagnostics = file.compilerDiagnostics.map(
+          const compilerDiagnostics = virtualCode.compilerDiagnostics.map(
             compilerMessageToDiagnostic
           );
 
-          return [...parserDiagnostics, ...compilerDiagnostics];
+          const diagnostics = [...parserDiagnostics, ...compilerDiagnostics];
+
+          return diagnostics;
 
           function parserMessageToDiagnostic(
             diag: MarkoVirtualCode["parserDiagnostics"][0]

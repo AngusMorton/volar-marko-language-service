@@ -1,3 +1,5 @@
+/// <reference types="@volar/typescript" />
+
 import {
   type CodeMapping,
   forEachEmbeddedCode,
@@ -9,24 +11,25 @@ import path from "path";
 import { Project, parse } from "@marko/language-tools";
 import { parseScripts } from "./parseScript";
 
-export function getLanguageModule(
+export function getLanguagePlugin(
   ts: typeof import("typescript")
-): LanguagePlugin<MarkoVirtualCode> {
+): LanguagePlugin<string, MarkoVirtualCode> {
   return {
+    getLanguageId(fileName: string) {
+      if (fileName.endsWith(".marko")) {
+        return "marko";
+      }
+    },
     createVirtualCode(fileId, languageId, snapshot) {
       if (languageId === "marko") {
         return new MarkoVirtualCode(fileId, snapshot, ts);
       }
     },
-    updateVirtualCode(_fileId, markoFile, newSnapshot) {
-      markoFile.update(newSnapshot);
-      return markoFile;
-    },
     typescript: {
       extraFileExtensions: [
         { extension: "marko", isMixedContent: true, scriptKind: 7 },
       ],
-      getScript(markoCode) {
+      getServiceScript(markoCode) {
         for (const code of forEachEmbeddedCode(markoCode)) {
           if (code.id === "script") {
             return {
@@ -80,15 +83,6 @@ export class MarkoVirtualCode implements VirtualCode {
     public snapshot: ts.IScriptSnapshot,
     public ts: typeof import("typescript")
   ) {
-    this.onSnapshotUpdated();
-  }
-
-  public update(newSnapshot: ts.IScriptSnapshot) {
-    this.snapshot = newSnapshot;
-    this.onSnapshotUpdated();
-  }
-
-  onSnapshotUpdated() {
     this.mappings = [
       {
         sourceOffsets: [0],

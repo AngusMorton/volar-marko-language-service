@@ -1,19 +1,36 @@
 {
   "private": true,
-  "name": "vscode-marko",
+  "name": "vscode-marko-volar",
   "version": "0.0.1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/volarjs/starter.git",
+    "url": "https://github.com/AngusMorton/volar-marko-language-service.git",
     "directory": "packages/vscode"
   },
+  "scripts": {
+    "build": "node scripts/build -- --minify",
+    "dev": "npm run build -- --watch",
+    "pack": "vsce package",
+    "release": "npm run build && vsce publish --pre-release"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.87.0",
+    "@volar/language-server": "~2.1.5",
+    "@volar/vscode": "~2.1.5",
+    "esbuild": "^0.20.2",
+    "esbuild-plugin-copy": "^2.1.1",
+    "marko-language-server": "workspace:*",
+    "marko-ts-plugin": "workspace:*",
+    "@vscode/vsce": "^2.24.0",
+    "vscode-languageclient": "^9.0.1"
+  },
+  "displayName": "Marko Volar Language Features",
+  "description": "Marko Language Features",
   "categories": [
     "Programming Languages"
   ],
-  "displayName": "marko Language Features",
-  "description": "marko Language Features",
-  "author": "volarjs",
-  "publisher": "volarjs",
+  "author": "AngusMorton",
+  "publisher": "AngusMorton",
   "engines": {
     "vscode": "^1.87.0"
   },
@@ -68,22 +85,5 @@
         }
       }
     ]
-  },
-  "scripts": {
-    "build": "node scripts/build -- --minify",
-    "dev": "npm run build -- --watch",
-    "pack": "vsce package",
-    "release": "npm run build && vsce publish --pre-release"
-  },
-  "devDependencies": {
-    "@types/vscode": "^1.87.0",
-    "@volar/language-server": "~2.1.5",
-    "@volar/vscode": "~2.1.5",
-    "esbuild": "^0.20.2",
-    "esbuild-plugin-copy": "^2.1.1",
-    "marko-language-server": "workspace:*",
-    "marko-ts-plugin": "workspace:*",
-    "@vscode/vsce": "^2.24.0",
-    "vscode-languageclient": "^9.0.1"
   }
 }

@@ -1,5 +1,3 @@
-import myLetMarko from "./my-let.marko";
-
 export default class extends Marko.Component {
     declare state: {
         something: string;

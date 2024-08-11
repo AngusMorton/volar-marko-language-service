@@ -2,8 +2,15 @@
   "name": "marko-ts-plugin",
   "version": "0.0.1",
   "description": "A TypeScript Plugin providing Marko intellisense",
+  "author": "AngusMorton",
+  "license": "MIT",
   "main": "dist/index.js",
   "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AngusMorton/volar-marko-language-server",
+    "directory": "packages/ts-plugin"
+  },
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts"
@@ -14,8 +21,8 @@
   },
   "dependencies": {
     "@marko/language-tools": "^2.2.6",
-    "@volar/language-core": "~2.1.5",
-    "@volar/typescript": "~2.1.5",
+    "@volar/language-core": "2.4.0-alpha.18",
+    "@volar/typescript": "2.4.0-alpha.18",
     "typescript": "^5.4.3",
     "vscode-languageserver-textdocument": "^1.0.11"
   }

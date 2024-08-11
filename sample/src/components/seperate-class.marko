@@ -9,14 +9,15 @@ $ const apple = "test";
     <if(banana)>
         <div>Something is true</div>
     </if>
-    <my-let/>
-
+    
     <for|colour| of=["green", "blue", "red", banana, apple]>
         <h3 on-click="clickMe">
             ${colour}
         </h3>
     </for>
 </div>
+
+
 style {
     /* Latin */
     @font-face {

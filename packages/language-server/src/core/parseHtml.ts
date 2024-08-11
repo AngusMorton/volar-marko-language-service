@@ -1,11 +1,13 @@
 import type { CodeMapping, VirtualCode } from "@volar/language-core";
-import { parse, extractScript, extractHTML } from "@marko/language-tools";
+import type { parse } from "@marko/language-tools";
+import { extractHTML } from "./internal/extractHtml";
+import type { Extracted } from "./internal/Extractor";
 
 export function parseHtml(parsed: ReturnType<typeof parse>): VirtualCode[] {
-  const script = extractHTML(parsed);
-  const scriptText = script.extracted.toString();
+  const extractedHtml = extractHTML(parsed);
+  const scriptText = extractedHtml.extracted.toString();
   const mappings: CodeMapping[] = generateMappingsFromExtracted(
-    script.extracted
+    extractedHtml.extracted
   );
 
   if (mappings.length > 0) {
@@ -27,9 +29,7 @@ export function parseHtml(parsed: ReturnType<typeof parse>): VirtualCode[] {
   return [];
 }
 
-function generateMappingsFromExtracted(
-  extracted: ReturnType<typeof extractScript>
-): CodeMapping[] {
+function generateMappingsFromExtracted(extracted: Extracted): CodeMapping[] {
   return extracted.tokens.map((it) => {
     return {
       sourceOffsets: [it.sourceStart],

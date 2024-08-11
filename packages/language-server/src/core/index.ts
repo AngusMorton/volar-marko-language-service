@@ -5,38 +5,37 @@ import {
   type VirtualCode,
 } from "@volar/language-core";
 import { parseScripts } from "./parseScript";
-import { URI } from "vscode-uri";
+import type { URI } from "vscode-uri";
 import type ts from "typescript";
-import path, { dirname } from "path";
+import path from "path";
 import type { PackageInfo } from "../util/importPackage";
 import { Project, parse } from "@marko/language-tools";
 import type { MarkoMeta } from "@marko/compiler";
 import { parseStyles } from "./parseStyles";
 import { parseHtml } from "./parseHtml";
-import { DiagnosticType } from "@marko/babel-utils";
+import { DiagnosticType, TaglibLookup } from "@marko/babel-utils";
 
-export function getLanguageModule(
+export function getMarkoLanguagePlugin(
   markoInstallInfo: PackageInfo,
   ts: typeof import("typescript")
-): LanguagePlugin<MarkoVirtualCode> {
+): LanguagePlugin<URI, MarkoVirtualCode> {
   return {
-    createVirtualCode(fileId, languageId, snapshot) {
-      if (languageId === "marko") {
-        const fileName = fileId.includes("://")
-          ? URI.parse(fileId).fsPath.replace(/\\/g, "/")
-          : fileId;
-        return new MarkoVirtualCode(fileName, snapshot, ts);
+    getLanguageId(uri) {
+      if (uri.path.endsWith(".marko")) {
+        return "marko";
       }
     },
-    updateVirtualCode(_fileId, markoFile, newSnapshot) {
-      markoFile.update(newSnapshot);
-      return markoFile;
+    createVirtualCode(uri, languageId, snapshot) {
+      if (languageId === "marko") {
+        const fileName = uri.fsPath.replace(/\\/g, "/");
+        return new MarkoVirtualCode(fileName, snapshot, ts);
+      }
     },
     typescript: {
       extraFileExtensions: [
         { extension: "marko", isMixedContent: true, scriptKind: 7 },
       ],
-      getScript(markoCode) {
+      getServiceScript(markoCode) {
         for (const code of forEachEmbeddedCode(markoCode)) {
           if (code.id === "script") {
             return {
@@ -98,21 +97,14 @@ export class MarkoVirtualCode implements VirtualCode {
   }[] = [];
   compilerDiagnostics: MarkoMeta["diagnostics"] = [];
   codegenStacks = [];
+  markoAst: ReturnType<typeof parse>;
+  tagLookup: TaglibLookup;
 
   constructor(
     public fileName: string,
     public snapshot: ts.IScriptSnapshot,
     public ts: typeof import("typescript")
   ) {
-    this.onSnapshotUpdated();
-  }
-
-  public update(newSnapshot: ts.IScriptSnapshot) {
-    this.snapshot = newSnapshot;
-    this.onSnapshotUpdated();
-  }
-
-  onSnapshotUpdated() {
     this.mappings = [
       {
         sourceOffsets: [0],
@@ -131,20 +123,28 @@ export class MarkoVirtualCode implements VirtualCode {
 
     this.embeddedCodes = [];
 
-    const dirname = path.dirname(this.fileName);
-    const tagLookup = Project.getTagLookup(dirname);
     const text = this.snapshot.getText(0, this.snapshot.getLength());
-    const markoAst = parse(text, this.fileName);
+    this.markoAst = parse(text, this.fileName);
     // TODO: Fork @marko/language-tools?
-    this.parserDiagnostics = markoAst.errors ?? [];
+    this.parserDiagnostics = this.markoAst.errors ?? [];
 
-    const scripts = parseScripts(this.fileName, markoAst, this.ts, tagLookup);
+    const dirname = path.dirname(fileName);
+    this.tagLookup = Project.getTagLookup(dirname);
+
+    const scripts = parseScripts(
+      this.fileName,
+      this.markoAst,
+      this.ts,
+      this.tagLookup
+    );
     this.embeddedCodes.push(...scripts);
 
-    const styles = parseStyles(this.fileName, markoAst, tagLookup);
+    const styles = parseStyles(this.fileName, this.markoAst, this.tagLookup);
     this.embeddedCodes.push(...styles);
 
-    const html = parseHtml(markoAst);
+    // Parsing the HTML seems to sometimes consume loads of resources
+    // and cause the language server to hang. Disabling for now.
+    const html = parseHtml(this.markoAst);
     this.embeddedCodes.push(...html);
 
     const compiler = Project.getCompiler(this.fileName);
