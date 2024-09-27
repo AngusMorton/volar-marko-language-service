@@ -1,16 +1,13 @@
-import { Extractor } from "./Extractor";
+import { type Node, NodeType, Parsed } from "../../parser";
+import { Extractor } from "../../util/extractor";
 import {
   AttributeValueType,
   getAttributeValueType,
   isHTMLTag,
 } from "./keywords";
-import { NodeType, type Node, type Parsed } from "@marko/language-tools";
 
 export function extractHTML(parsed: Parsed) {
-  const extractor = new HTMLExtractor(parsed);
-  const end = extractor.end();
-
-  return end;
+  return new HTMLExtractor(parsed).end();
 }
 
 class HTMLExtractor {
@@ -26,7 +23,6 @@ class HTMLExtractor {
     this.#read = parsed.read.bind(parsed);
     this.#nodeDetails = {};
     this.#nodeIdCounter = 0;
-
     parsed.program.body.forEach((node) => this.#visitNode(node));
   }
 
@@ -48,7 +44,7 @@ class HTMLExtractor {
         const nodeId = `${this.#nodeIdCounter++}`;
         ({ isDynamic, hasDynamicAttrs, hasDynamicBody } = this.#writeTag(
           node,
-          nodeId
+          nodeId,
         ));
         this.#nodeDetails[nodeId] = { hasDynamicAttrs, hasDynamicBody };
         break;
@@ -76,7 +72,7 @@ class HTMLExtractor {
     if (!isDynamic) {
       ({ hasDynamicAttrs, hasDynamicBody } = this.#writeHTMLTag(node, id));
     } else {
-      this.#writeHTMLTag(node, id);
+      this.#writeCustomTag(node);
     }
     return { isDynamic, hasDynamicAttrs, hasDynamicBody };
   }
@@ -109,8 +105,7 @@ class HTMLExtractor {
 
   #writeCustomTag(node: Node.Tag) {
     if (node.body) {
-      // Deviation from @marko/language-tools
-      // We want to keep the tag name in the output so the HTML volar plugin provides the correct completion
+      // Replace all unknown and undefined tag names with `div`s
       this.#extractor.write("<div>");
       node.body.forEach((node) => this.#visitNode(node));
       this.#extractor.write("</div>");
@@ -120,6 +115,7 @@ class HTMLExtractor {
   #writeAttrNamed(attr: Node.AttrNamed) {
     this.#extractor.write(" ");
     this.#extractor.copy(attr.name);
+
     if (
       attr.value === undefined ||
       attr.name.start === attr.name.end ||
@@ -130,9 +126,8 @@ class HTMLExtractor {
 
     const valueString = this.#read(attr.value);
     const valueType = getAttributeValueType(valueString);
-    if (valueType === undefined) {
-      return;
-    }
+    if (valueType === undefined) return;
+
     switch (valueType) {
       case AttributeValueType.True:
         break;

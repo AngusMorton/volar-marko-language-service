@@ -14,9 +14,54 @@ import type { MarkoMeta } from "@marko/compiler";
 import { parseStyles } from "./parseStyles";
 import { parseHtml } from "./parseHtml";
 import { DiagnosticType, TaglibLookup } from "@marko/babel-utils";
+import type { Extracted } from "./internal/Extractor";
+import { getLanguageServerTypesDir } from "../util/getLanguageServerTypesDir";
+
+const decoratedHosts = new WeakSet<ts.LanguageServiceHost>();
+
+export function addMarkoTypes(
+  markoInstallInfo: PackageInfo | undefined,
+  ts: typeof import("typescript"),
+  host: ts.LanguageServiceHost
+) {
+  if (decoratedHosts.has(host)) {
+    return;
+  }
+  decoratedHosts.add(host);
+
+  const getScriptFileNames = host.getScriptFileNames.bind(host);
+
+  host.getScriptFileNames = () => {
+    const addedFileNames = [];
+
+    const fallbackTypesDirectory = getLanguageServerTypesDir(ts);
+
+    addedFileNames.push(
+      ts.sys.resolvePath(
+        path.resolve(fallbackTypesDirectory, "marko.internal.d.ts")
+      )
+    );
+
+    if (markoInstallInfo) {
+      const markoTypesFile = ts.sys.resolvePath(
+        path.join(markoInstallInfo.path, "index.d.ts")
+      );
+      addedFileNames.push(markoTypesFile);
+    } else {
+      const runtimeTypes = path.resolve(
+        fallbackTypesDirectory,
+        "marko.runtime.d.ts"
+      );
+      // These are a copy of the types defined in the marko project for
+      // when we can't find a marko install.
+      addedFileNames.push(ts.sys.resolvePath(runtimeTypes));
+    }
+
+    return [...getScriptFileNames(), ...addedFileNames];
+  };
+}
 
 export function getMarkoLanguagePlugin(
-  markoInstallInfo: PackageInfo,
   ts: typeof import("typescript")
 ): LanguagePlugin<URI, MarkoVirtualCode> {
   return {
@@ -46,40 +91,6 @@ export function getMarkoLanguagePlugin(
           }
         }
       },
-      resolveLanguageServiceHost(host) {
-        return {
-          ...host,
-          getScriptFileNames() {
-            const addedFileNames = [];
-
-            const builtInTypes = ts.sys.resolvePath(
-              path.resolve(__dirname, "./types")
-            );
-            addedFileNames.push(
-              ts.sys.resolvePath(
-                path.resolve(builtInTypes, "marko.internal.d.ts")
-              )
-            );
-
-            if (markoInstallInfo) {
-              const markoTypesFile = ts.sys.resolvePath(
-                path.join(markoInstallInfo.path, "index.d.ts")
-              );
-              addedFileNames.push(markoTypesFile);
-            } else {
-              // These are a copy of the types defined in the marko project for
-              // when we can't find a marko install.
-              addedFileNames.push(
-                ts.sys.resolvePath(
-                  path.resolve(builtInTypes, "marko.runtime.d.ts")
-                )
-              );
-            }
-
-            return [...host.getScriptFileNames(), ...addedFileNames];
-          },
-        };
-      },
     },
   };
 }
@@ -98,6 +109,7 @@ export class MarkoVirtualCode implements VirtualCode {
   compilerDiagnostics: MarkoMeta["diagnostics"] = [];
   codegenStacks = [];
   markoAst: ReturnType<typeof parse>;
+  htmlAst: Extracted;
   tagLookup: TaglibLookup;
 
   constructor(
@@ -145,7 +157,8 @@ export class MarkoVirtualCode implements VirtualCode {
     // Parsing the HTML seems to sometimes consume loads of resources
     // and cause the language server to hang. Disabling for now.
     const html = parseHtml(this.markoAst);
-    this.embeddedCodes.push(...html);
+    this.htmlAst = html[1];
+    this.embeddedCodes.push(...html[0]);
 
     const compiler = Project.getCompiler(this.fileName);
     try {

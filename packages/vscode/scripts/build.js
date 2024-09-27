@@ -7,7 +7,8 @@ require("esbuild")
       "./dist/server":
         "./node_modules/marko-language-server/bin/marko-language-server.js",
       "./dist/client": "src/client.ts",
-      "./dist/marko-ts-plugin": "./node_modules/marko-ts-plugin/dist/",
+      "./node_modules/marko-ts-plugin-bundle/index":
+        "./node_modules/marko-ts-plugin/dist/index.js",
     },
     sourcemap: true,
     bundle: true,

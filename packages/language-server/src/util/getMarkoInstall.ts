@@ -1,11 +1,11 @@
-import { getPackageInfo } from "./importPackage";
+import { PackageInfo, getPackageInfo } from "./importPackage";
 
 export function getMarkoInstall(
   basePaths: string[],
   options?: {
     nearestPackageJson: string | undefined;
   }
-) {
+): PackageInfo | undefined {
   if (options?.nearestPackageJson) {
     basePaths.push(options.nearestPackageJson);
 

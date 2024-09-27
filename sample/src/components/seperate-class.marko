@@ -1,9 +1,11 @@
 $ console.log("I'm in a scriptlet");
 static const banana = 5;
 $ const apple = "test";
+
 <div>
     $ console.log("I'm a nested scriptlet");
     <h1>I'm being edited in Volar</h1>
+
     <div>I can render scriptlets and stuff: ${apple}.</div>
     <h2>${component.state.something}</h2>
     <if(banana)>
@@ -15,6 +17,8 @@ $ const apple = "test";
             ${colour}
         </h3>
     </for>
+
+    <my-let test="test"/>
 </div>
 
 

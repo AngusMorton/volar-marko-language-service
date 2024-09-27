@@ -9,6 +9,6 @@
     "ignoreDeprecations": "5.0",
     "importsNotUsedAsValues": "error"
   },
-  "include": ["src"],
+  "include": ["src", "types"],
   "exclude": ["node_modules"]
 }

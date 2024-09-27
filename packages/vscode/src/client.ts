@@ -1,4 +1,3 @@
-import { InitializationOptions } from "@volar/language-server";
 import * as serverProtocol from "@volar/language-server/protocol";
 import {
   LabsInfo,

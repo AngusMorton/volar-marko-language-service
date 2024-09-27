@@ -9,14 +9,5 @@
     "typescript": "^5.4.3",
     "turbo": "1.10.2",
     "prettier": "^3.2.5"
-  },
-  "resolutions": {
-    "@volar/language-server": "2.4.0-alpha.18",
-    "@volar/vscode": "2.4.0-alpha.18"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "@marko/language-tools@2.2.6": "patches/@marko__language-tools@2.2.6.patch"
-    }
   }
 }

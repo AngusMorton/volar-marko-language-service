@@ -75,5 +75,10 @@ export default function getTagNameCompletion({
     insertTextFormat: autocomplete ? InsertTextFormat.Snippet : undefined,
     kind: tag.html ? CompletionItemKind.Property : CompletionItemKind.Class,
     textEdit: range && TextEdit.replace(range, autocomplete?.snippet || label),
-  };
+    data: {
+      originalItem: {
+        source: fileForTag,
+      },
+    },
+  } satisfies CompletionItem;
 }

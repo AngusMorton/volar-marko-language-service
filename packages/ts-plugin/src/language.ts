@@ -40,33 +40,6 @@ export function getLanguagePlugin(
           }
         }
       },
-      resolveLanguageServiceHost(host) {
-        return {
-          ...host,
-          getScriptFileNames() {
-            const addedFileNames = [];
-
-            const builtInTypes = ts.sys.resolvePath(
-              path.resolve(__dirname, "./types")
-            );
-            addedFileNames.push(
-              ts.sys.resolvePath(
-                path.resolve(builtInTypes, "marko.internal.d.ts")
-              )
-            );
-
-            // These are a copy of the types defined in the marko project for
-            // when we can't find a marko install.
-            addedFileNames.push(
-              ts.sys.resolvePath(
-                path.resolve(builtInTypes, "marko.runtime.d.ts")
-              )
-            );
-
-            return [...host.getScriptFileNames(), ...addedFileNames];
-          },
-        };
-      },
     },
   };
 }

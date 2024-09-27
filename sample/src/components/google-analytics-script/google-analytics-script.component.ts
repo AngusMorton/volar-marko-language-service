@@ -1,5 +1,3 @@
-import { type FeatureConfig } from "src/feature/FeatureConfig";
-import { registerOnConsent } from "src/utils/tcfApi";
 
 export type GaTag = "UA-22361422-1" | "UA-22361422-3";
 

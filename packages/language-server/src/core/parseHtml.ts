@@ -3,7 +3,9 @@ import type { parse } from "@marko/language-tools";
 import { extractHTML } from "./internal/extractHtml";
 import type { Extracted } from "./internal/Extractor";
 
-export function parseHtml(parsed: ReturnType<typeof parse>): VirtualCode[] {
+export function parseHtml(
+  parsed: ReturnType<typeof parse>
+): [VirtualCode[], Extracted] {
   const extractedHtml = extractHTML(parsed);
   const scriptText = extractedHtml.extracted.toString();
   const mappings: CodeMapping[] = generateMappingsFromExtracted(
@@ -12,21 +14,24 @@ export function parseHtml(parsed: ReturnType<typeof parse>): VirtualCode[] {
 
   if (mappings.length > 0) {
     return [
-      {
-        id: "html",
-        languageId: "html",
-        snapshot: {
-          getText: (start, end) => scriptText.substring(start, end),
-          getLength: () => scriptText.length,
-          getChangeRange: () => undefined,
+      [
+        {
+          id: "html",
+          languageId: "html",
+          snapshot: {
+            getText: (start, end) => scriptText.substring(start, end),
+            getLength: () => scriptText.length,
+            getChangeRange: () => undefined,
+          },
+          mappings: mappings,
+          embeddedCodes: [],
         },
-        mappings: mappings,
-        embeddedCodes: [],
-      },
+      ],
+      extractedHtml.extracted,
     ];
   }
 
-  return [];
+  return [[], extractedHtml.extracted];
 }
 
 function generateMappingsFromExtracted(extracted: Extracted): CodeMapping[] {

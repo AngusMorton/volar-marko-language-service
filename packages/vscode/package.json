@@ -38,6 +38,11 @@
     "onLanguage:marko"
   ],
   "main": "./dist/client.js",
+  "files": [
+    "dist/",
+    "types/",
+    "syntaxes/"
+  ],
   "contributes": {
     "languages": [
       {
@@ -54,7 +59,7 @@
     ],
     "typescriptServerPlugins": [
       {
-        "name": "marko-ts-plugin",
+        "name": "marko-ts-plugin-bundle",
         "enableForWorkspaceTypeScriptVersions": true
       }
     ],
