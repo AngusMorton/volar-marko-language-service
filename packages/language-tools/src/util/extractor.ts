@@ -6,7 +6,7 @@ import {
   getLines,
   getLocation,
   getPosition,
-} from "@marko/language-tools";
+} from "../parser";
 
 interface Token {
   generatedStart: number;
@@ -69,14 +69,14 @@ export class Extracted {
   #sourceToGenerated: SourceToGeneratedView | typeof emptyView;
   #generatedToSource: GeneratedToSourceView | typeof emptyView;
   #cachedGeneratedLines: number[] | undefined;
-
+  tokens: Token[];
   constructor(
     public parsed: Parsed,
     generated: string,
-    public tokens: Token[]
+    tokens: Token[]
   ) {
     this.#generated = generated;
-
+    this.tokens = tokens;
     if (tokens.length === 0) {
       this.#generatedToSource = this.#sourceToGenerated = emptyView;
     } else {

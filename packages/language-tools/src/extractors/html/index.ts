@@ -44,7 +44,7 @@ class HTMLExtractor {
         const nodeId = `${this.#nodeIdCounter++}`;
         ({ isDynamic, hasDynamicAttrs, hasDynamicBody } = this.#writeTag(
           node,
-          nodeId,
+          nodeId
         ));
         this.#nodeDetails[nodeId] = { hasDynamicAttrs, hasDynamicBody };
         break;
@@ -84,7 +84,6 @@ class HTMLExtractor {
     this.#extractor.write("<");
     this.#extractor.copy(node.name);
 
-    this.#extractor.write(` data-marko-node-id="${id}"`);
     // [node attributes]
     node.attrs?.forEach((attr) => {
       if (attr.type === NodeType.AttrNamed) this.#writeAttrNamed(attr);
@@ -97,24 +96,51 @@ class HTMLExtractor {
       node.body?.forEach((child) => {
         if (this.#visitNode(child)) hasDynamicBody = true;
       });
-      this.#extractor.write(`</${node.nameText}>`);
+      this.#extractor.write(`</`);
+      this.#extractor.copy(node.name);
+      this.#extractor.write(">");
     }
 
     return { hasDynamicAttrs, hasDynamicBody };
   }
 
   #writeCustomTag(node: Node.Tag) {
-    if (node.body) {
-      // Replace all unknown and undefined tag names with `div`s
-      this.#extractor.write("<div>");
-      node.body.forEach((node) => this.#visitNode(node));
-      this.#extractor.write("</div>");
+    if (!node.nameText) {
+      // Render any body nodes, we can't render the tag name because it's dynamic.
+      if (node.body) {
+        node.body.forEach((node) => this.#visitNode(node));
+      }
+    } else {
+      this.#extractor.write(`<`);
+      this.#extractor.copy(node.name);
+
+      node.attrs?.forEach((attr) => {
+        if (attr.type === NodeType.AttrNamed) this.#writeAttrNamed(attr);
+      });
+
+      if (node.selfClosed) {
+        this.#extractor.write("/>");
+      } else {
+        this.#extractor.write(">");
+
+        if (node.body) {
+          node.body.forEach((node) => this.#visitNode(node));
+        }
+        this.#extractor.write(`</`);
+        this.#extractor.copy(node.name);
+        this.#extractor.write(">");
+      }
     }
   }
 
   #writeAttrNamed(attr: Node.AttrNamed) {
     this.#extractor.write(" ");
-    this.#extractor.copy(attr.name);
+
+    if (attr.name.start === attr.name.end) {
+      this.#extractor.write("default");
+    } else {
+      this.#extractor.copy(attr.name);
+    }
 
     if (
       attr.value === undefined ||

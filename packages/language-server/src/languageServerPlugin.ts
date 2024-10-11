@@ -4,7 +4,7 @@ import { create as createCssService } from "volar-service-css";
 import { create as createTypeScriptTwoSlashService } from "volar-service-typescript-twoslash-queries";
 import { getMarkoLanguagePlugin } from "./core";
 import { create as createTypeScriptServices } from "volar-service-typescript";
-// import { create as createHtmlService } from "./plugin/html";
+import { create as createHtmlService } from "./plugin/html";
 import { create as createMarkoService } from "./plugin/marko";
 import type { Connection } from "@volar/language-server";
 
@@ -17,7 +17,7 @@ export function getLanguageServicePlugins(
   ts: typeof import("typescript")
 ) {
   const result = [
-    // createHtmlService(),
+    createHtmlService(),
     createCssService(),
     createEmmetService(),
     ...createTypeScriptServices(ts),

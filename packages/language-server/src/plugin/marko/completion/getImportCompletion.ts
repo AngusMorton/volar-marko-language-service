@@ -1,7 +1,7 @@
 import { TextEdit, type CompletionItem } from "@volar/language-server";
-import type { Node } from "@marko/language-tools";
 import getTagNameCompletion from "./getTagNameCompletion";
 import type { MarkoVirtualCode } from "../../../core";
+import type { Node } from "marko-language-tools";
 
 const importTagReg = /(['"])<((?:[^\1\\>]+|\\.)*)>?\1/;
 

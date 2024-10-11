@@ -1,14 +1,14 @@
 import type { LocationLink } from "@volar/language-service";
 import type { MarkoVirtualCode } from "../../../core";
+import { readFileSync } from "fs";
+import { URI } from "vscode-uri";
 import {
   Location,
   Position,
   getLines,
   getLocation,
   type Node,
-} from "@marko/language-tools";
-import { readFileSync } from "fs";
-import { URI } from "vscode-uri";
+} from "marko-language-tools";
 
 export function provideAttrNameDefinitions(
   node: Node.AttrName,

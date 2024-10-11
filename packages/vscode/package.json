@@ -8,15 +8,15 @@
     "directory": "packages/vscode"
   },
   "scripts": {
-    "build": "node scripts/build -- --minify",
+    "build": "node scripts/build",
     "dev": "npm run build -- --watch",
     "pack": "vsce package",
     "release": "npm run build && vsce publish --pre-release"
   },
   "devDependencies": {
     "@types/vscode": "^1.87.0",
-    "@volar/language-server": "~2.1.5",
-    "@volar/vscode": "~2.1.5",
+    "@volar/language-server": "^2.4.5",
+    "@volar/vscode": "^2.4.5",
     "esbuild": "^0.20.2",
     "esbuild-plugin-copy": "^2.1.1",
     "marko-language-server": "workspace:*",

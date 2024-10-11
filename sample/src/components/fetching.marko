@@ -1,0 +1,15 @@
+export interface Input {
+  url: string;
+}
+
+<await(fetch(input.url)) timeout=1000>
+    <@then|response|>
+      <div>Response: ${response}</div>
+    </@then>
+    <@catch|error: Error|>
+      <div>Error: ${error.message}</div>
+      </@catch>
+      <@placeholder>
+        <div>Loading...</div>
+    </@placeholder>
+  </await>

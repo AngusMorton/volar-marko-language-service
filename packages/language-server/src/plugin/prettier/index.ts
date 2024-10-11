@@ -6,7 +6,7 @@ import { MessageType } from "@volar/language-server";
 import { URI } from "vscode-uri";
 import { dynamicRequire } from "../../util/importPackage";
 import { dirname } from "path";
-import { Project } from "@marko/language-tools";
+import { Project } from "marko-language-tools";
 
 export function getMarkoPrettierService(
   connection: Connection

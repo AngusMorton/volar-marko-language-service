@@ -3,7 +3,6 @@ import type { Config, types as t } from "@marko/compiler";
 import type ts from "typescript/lib/tsserverlibrary";
 import { ScriptLang, extractScript } from "../extractors/script";
 import { parse } from "../parser";
-
 import * as Project from "../util/project";
 import type { ProcessorConfig } from ".";
 
@@ -11,7 +10,7 @@ const isRemapExtensionReg = /\.ts$/;
 const skipRemapExtensionsReg =
   /\.(?:[cm]?jsx?|json|marko|css|less|sass|scss|styl|stylus|pcss|postcss|sss|a?png|jpe?g|jfif|pipeg|pjp|gif|svg|ico|web[pm]|avif|mp4|ogg|mp3|wav|flac|aac|opus|woff2?|eot|[ot]tf|webmanifest|pdf|txt)$/;
 
-export default {
+const result: ProcessorConfig = {
   extension: ".marko",
   create({ ts, host, configFile }) {
     const currentDirectory = host.getCurrentDirectory
@@ -43,9 +42,7 @@ export default {
               // Find all relative imports in Marko template
               // if they would map to a `.ts` file, then we convert it to a `.js` file for the output.
               "ImportDeclaration|ExportNamedDeclaration"(
-                decl: t.NodePath<
-                  t.ImportDeclaration | t.ExportNamedDeclaration
-                >,
+                decl: t.NodePath<t.ImportDeclaration | t.ExportNamedDeclaration>
               ) {
                 const { node } = decl;
                 const value = node.source?.value;
@@ -114,14 +111,14 @@ export default {
             fileName,
             defaultScriptLang,
             ts,
-            host,
+            host
           ),
           runtimeTypesCode: runtimeTypes.markoTypesCode,
         });
       },
       print({ extracted: { parsed } }) {
         const { code, map } = Project.getCompiler(
-          path.dirname(parsed.filename),
+          path.dirname(parsed.filename)
         ).compileSync(parsed.code, parsed.filename, compileConfig);
         return { code, map };
       },
@@ -177,7 +174,7 @@ export default {
           const printed = printer.printNode(
             ts.EmitHint.Unspecified,
             statement,
-            sourceFile,
+            sourceFile
           );
 
           // Add `static` to all non-import/export statements.
@@ -239,9 +236,7 @@ export default {
 
             if (valueType) {
               code += `= ${castType(
-                typeChecker.typeToString(
-                  typeChecker.getTypeOfSymbol(valueType),
-                ),
+                typeChecker.typeToString(typeChecker.getTypeOfSymbol(valueType))
               )}`;
             } else {
               code += `...${castType(typeChecker.typeToString(returnType))}`;
@@ -311,7 +306,7 @@ export default {
       }
     }
   },
-} satisfies ProcessorConfig;
+};
 
 function castType(type: string) {
   if (type === "any") {
@@ -320,3 +315,5 @@ function castType(type: string) {
 
   return `(1 as any as ${type})`;
 }
+
+export default result;

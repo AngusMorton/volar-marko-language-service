@@ -4,15 +4,15 @@ import {
   LanguageServicePlugin,
   LanguageServicePluginInstance,
 } from "@volar/language-server";
-import { DiagnosticType } from "@marko/babel-utils";
+import { DiagnosticType, NodeType } from "marko-language-tools";
 import { MarkoVirtualCode } from "../../core/index.js";
-import type { MarkoMeta } from "@marko/compiler";
-import { NodeType } from "@marko/language-tools";
-import { getOpenTagNameCompletions } from "./completion/getOpenTagNameCompletions.js";
-import { getTagCompletion } from "./completion/getTagCompletion.js";
+import type { MarkoMeta } from "marko-language-tools";
 import { URI } from "vscode-uri";
 import { getImportCompletion } from "./completion/getImportCompletion.js";
 import { provideOpenTagDefinitions } from "./definition/provideOpenTagDefiniitions.js";
+import type { TextDocument } from "vscode-languageserver-textdocument";
+import { getAttrNameCompletion } from "./completion/getAttrNameCompletion.js";
+
 type DiagnosticMessage = MarkoMeta["diagnostics"][0];
 
 export const create = (
@@ -29,94 +29,68 @@ export const create = (
         provideCompletionItems(document, position, completionContext, token) {
           if (token.isCancellationRequested) return;
 
-          const decoded = context.decodeEmbeddedDocumentUri(
-            URI.parse(document.uri)
-          );
+          return worker(document, (virtualCode) => {
+            const offset = document.offsetAt(position);
+            const node = virtualCode.markoAst.nodeAt(offset);
+            if (!node) return;
+            if (node.type === NodeType.Import) {
+              return {
+                items: getImportCompletion(node, virtualCode),
+                isIncomplete: true,
+              };
+            } else if (node.type === NodeType.AttrName) {
+              return {
+                items: getAttrNameCompletion(node, virtualCode, offset),
+                isIncomplete: true,
+              };
+            }
 
-          const sourceScript =
-            decoded && context.language.scripts.get(decoded[0]);
-          const virtualCode =
-            decoded && sourceScript?.generated?.embeddedCodes.get(decoded[1]);
-          if (!(virtualCode instanceof MarkoVirtualCode)) return;
-
-          const node = virtualCode.markoAst.nodeAt(document.offsetAt(position));
-          if (!node) return;
-          if (
-            node.type === NodeType.OpenTagName ||
-            // If the user types "<", then we assume they're trying to open a tag.
-            completionContext.triggerCharacter === "<"
-          ) {
             return {
-              items: getOpenTagNameCompletions(node, virtualCode),
+              items: [],
               isIncomplete: false,
             };
-          } else if (node.type === NodeType.Tag) {
-            return {
-              items: getTagCompletion(
-                node,
-                virtualCode,
-                document.offsetAt(position)
-              ),
-              isIncomplete: false,
-            };
-          } else if (node.type === NodeType.Import) {
-            return {
-              items: getImportCompletion(node, virtualCode),
-              isIncomplete: true,
-            };
-          }
-
-          return {
-            items: [],
-            isIncomplete: false,
-          };
+          });
         },
 
         provideDefinition(document, position, token) {
           if (token.isCancellationRequested) return;
 
-          const decoded = context.decodeEmbeddedDocumentUri(
-            URI.parse(document.uri)
-          );
+          return worker(document, (virtualCode) => {
+            const node = virtualCode.markoAst.nodeAt(
+              document.offsetAt(position)
+            );
+            if (!node) return;
 
-          const sourceScript =
-            decoded && context.language.scripts.get(decoded[0]);
-          const virtualCode =
-            decoded && sourceScript?.generated?.embeddedCodes.get(decoded[1]);
-          if (!(virtualCode instanceof MarkoVirtualCode)) return;
-
-          const node = virtualCode.markoAst.nodeAt(document.offsetAt(position));
-          if (!node) return;
-
-          if (node.type === NodeType.OpenTagName) {
-            return provideOpenTagDefinitions(node, virtualCode);
-          }
+            if (node.type === NodeType.OpenTagName) {
+              return provideOpenTagDefinitions(node, virtualCode);
+            }
+          });
         },
 
         provideDiagnostics(document, token) {
           if (token.isCancellationRequested) return [];
 
-          const decoded = context.decodeEmbeddedDocumentUri(
-            URI.parse(document.uri)
-          );
-          const sourceScript =
-            decoded && context.language.scripts.get(decoded[0]);
-          const virtualCode =
-            decoded && sourceScript?.generated?.embeddedCodes.get(decoded[1]);
-          if (!(virtualCode instanceof MarkoVirtualCode)) return;
+          return worker(document, (virtualCode) => {
+            try {
+              const parserDiagnostics = virtualCode.parserDiagnostics.map(
+                parserMessageToDiagnostic
+              );
+              const compilerDiagnostics = virtualCode.compilerDiagnostics.map(
+                compilerMessageToDiagnostic
+              );
 
-          console.log("Providing diagnostics for", virtualCode.fileName);
+              const diagnostics = [
+                ...parserDiagnostics,
+                ...compilerDiagnostics,
+              ];
 
-          const parserDiagnostics = virtualCode.parserDiagnostics.map(
-            parserMessageToDiagnostic
-          );
-          const compilerDiagnostics = virtualCode.compilerDiagnostics.map(
-            compilerMessageToDiagnostic
-          );
+              return diagnostics;
+            } catch (error) {
+              console.error("Error providing diagnostics", error);
+            }
 
-          const diagnostics = [...parserDiagnostics, ...compilerDiagnostics];
-
-          return diagnostics;
+            return [];
+          });
 
           function parserMessageToDiagnostic(
             diag: MarkoVirtualCode["parserDiagnostics"][0]
@@ -136,6 +110,8 @@ export const create = (
           function compilerMessageToDiagnostic(
             diag: DiagnosticMessage
           ): Diagnostic {
+            console.log("compilerMessageToDiagnostic", diag);
+
             const range = diag.loc
               ? {
                   start: {
@@ -177,6 +153,22 @@ export const create = (
           }
         },
       };
+
+      async function worker<T>(
+        document: TextDocument,
+        callback: (markoDocument: MarkoVirtualCode) => T
+      ): Promise<Awaited<T> | undefined> {
+        const decoded = context.decodeEmbeddedDocumentUri(
+          URI.parse(document.uri)
+        );
+        const sourceScript =
+          decoded && context.language.scripts.get(decoded[0]);
+        const virtualCode =
+          decoded && sourceScript?.generated?.embeddedCodes.get(decoded[1]);
+        if (!(virtualCode instanceof MarkoVirtualCode)) return;
+
+        return await callback(virtualCode);
+      }
     },
   };
 };

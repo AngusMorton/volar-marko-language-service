@@ -1,7 +1,7 @@
 import type { CompletionItem } from "@volar/language-server";
-import { type Node, NodeType } from "@marko/language-tools";
 import getTagNameCompletion from "./getTagNameCompletion";
 import type { MarkoVirtualCode } from "../../../core";
+import { type Node, NodeType } from "marko-language-tools";
 
 export function getOpenTagNameCompletions(
   node: Node.OpenTagName | Node.AnyNode,

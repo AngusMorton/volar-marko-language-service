@@ -1,7 +1,7 @@
 import type ts from "typescript/lib/tsserverlibrary";
-import { Extracted } from "../util/extractor";
 import { getExt } from "../util/get-ext";
 import marko from "./marko";
+import type { Extracted } from "../util/extractor";
 
 export type ProcessorExtension = `.${string}`;
 

@@ -1,0 +1,50 @@
+{
+  "name": "marko-language-tools",
+  "version": "0.0.1",
+  "description": "A TypeScript Plugin providing Marko intellisense",
+  "author": "AngusMorton",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AngusMorton/volar-marko-language-service.git",
+    "directory": "packages/language-tools"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.js"
+    },
+    "./marko.internal.d.ts": "./marko.internal.d.ts"
+  },
+  "scripts": {
+    "build": "tsc -b && tsx build.mts",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@babel/helper-validator-identifier": "^7.22.20",
+    "@babel/parser": "^7.23.9",
+    "@luxass/strip-json-comments": "^1.2.0",
+    "htmljs-parser": "^5.5.2",
+    "relative-import-path": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@marko/compiler": "^5.37.14"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-typescript": "^7.24.7",
+    "@babel/types": "^7.25.6",
+    "@marko/babel-utils": "^6.5.6",
+    "@marko/compiler": "^5.37.14",
+    "@types/babel__helper-validator-identifier": "^7.15.2",
+    "esbuild": "^0.20.2",
+    "marko": "^5.33.10",
+    "tsx": "^4.7.0",
+    "typescript": "^5.2.2"
+  }
+}

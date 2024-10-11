@@ -1,17 +1,17 @@
 import type { LocationLink } from "@volar/language-service";
 import type { MarkoVirtualCode } from "../../../core";
+import path from "path";
+import { readFileSync } from "fs";
+import { URI } from "vscode-uri";
 import {
   Location,
+  Node,
   NodeType,
   Position,
   getLines,
   getLocation,
-  type Node,
-} from "@marko/language-tools";
-import type { TagDefinition } from "@marko/babel-utils";
-import path from "path";
-import { readFileSync } from "fs";
-import { URI } from "vscode-uri";
+  type TagDefinition,
+} from "marko-language-tools";
 
 export function provideOpenTagDefinitions(
   node: Node.OpenTagName,

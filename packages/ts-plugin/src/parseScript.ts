@@ -1,5 +1,5 @@
 import type { CodeMapping, VirtualCode } from "@volar/language-core";
-import { parse, extractScript, ScriptLang } from "@marko/language-tools";
+import { ScriptLang, extractScript, type parse } from "marko-language-tools";
 
 export function parseScripts(
   fileId: string,

@@ -4,7 +4,7 @@ import {
   TextEdit,
 } from "@volar/language-server";
 import type { CompletionItem } from "@volar/language-server";
-import { type Node, UNFINISHED } from "@marko/language-tools";
+import { UNFINISHED, type Node } from "marko-language-tools";
 import type { MarkoVirtualCode } from "../../../core";
 
 const partialCloseTagReg = /<\/(?:[^><]*>)?/iy;

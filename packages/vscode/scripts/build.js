@@ -1,6 +1,7 @@
 console.log("Building VSCode Plugin...");
 
 const isDev = process.argv.includes("--watch");
+
 require("esbuild")
   .context({
     entryPoints: {
@@ -25,6 +26,14 @@ require("esbuild")
         resolveFrom: "cwd",
         assets: {
           from: ["../language-server/types/**/*.d.ts"],
+          to: ["./dist/types"],
+          watch: isDev,
+        },
+      }),
+      require("esbuild-plugin-copy").copy({
+        resolveFrom: "cwd",
+        assets: {
+          from: ["../language-tools/types/**/*.d.ts"],
           to: ["./dist/types"],
           watch: isDev,
         },

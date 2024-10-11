@@ -8,8 +8,8 @@ import {
 } from "@volar/language-core";
 import type ts from "typescript";
 import path from "path";
-import { Project, parse } from "@marko/language-tools";
 import { parseScripts } from "./parseScript";
+import { Project, parse } from "marko-language-tools";
 
 export function getLanguagePlugin(
   ts: typeof import("typescript")

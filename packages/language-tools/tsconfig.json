@@ -4,7 +4,8 @@
     "outDir": "dist",
     "rootDir": "src",
     "emitDeclarationOnly": false,
+    "declarationMap": true,
     "sourceMap": true
   },
-  "include": ["src", "types", "../language-tools/types/marko.internal.d.ts"]
+  "include": ["src", "types"]
 }

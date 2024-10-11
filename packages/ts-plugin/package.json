@@ -20,9 +20,9 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@marko/language-tools": "^2.2.6",
-    "@volar/language-core": "2.4.5",
-    "@volar/typescript": "2.4.5",
+    "@volar/language-core": "^2.4.5",
+    "@volar/typescript": "^2.4.5",
+    "marko-language-tools": "workspace:*",
     "typescript": "^5.4.3",
     "vscode-languageserver-textdocument": "^1.0.11"
   }

@@ -6,4 +6,7 @@ export * as Processors from "./processors";
 export { getExt } from "./util/get-ext";
 export { isDefinitionFile } from "./util/is-definition-file";
 export * from "./extractors/html";
-export { type Extracted } from "./util/extractor";
+export type { Extracted } from "./util/extractor";
+export type { TaglibLookup, TagDefinition } from "@marko/babel-utils";
+export { DiagnosticType } from "@marko/babel-utils";
+export type { MarkoMeta } from "@marko/compiler";

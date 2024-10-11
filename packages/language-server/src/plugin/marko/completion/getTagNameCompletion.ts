@@ -1,5 +1,5 @@
 import path from "path";
-import type { TagDefinition } from "@marko/babel-utils";
+import type { TagDefinition } from "marko-language-tools";
 import {
   type CompletionItem,
   CompletionItemKind,

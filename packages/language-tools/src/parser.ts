@@ -1,5 +1,4 @@
 import { type Range, type Ranges, TagType, createParser } from "htmljs-parser";
-
 import { getNodeAtOffset } from "./util/get-node-at-offset";
 
 const styleBlockReg = /((?:\.[^\s\\/:*?"<>|({]+)*)\s*\{/y;
@@ -314,6 +313,7 @@ export function parse(code: string, filename = "index.marko") {
     filename,
     program,
     code,
+    errors: builder.errors,
   };
 }
 
@@ -325,6 +325,7 @@ class Builder {
   #staticNode: Node.StaticNode | undefined;
   #attrNode: Node.AttrNamed | undefined;
   #comments: Repeatable<Node.Comment>;
+  errors: Ranges.Error[];
 
   constructor(code: string) {
     this.#code = code;
@@ -337,13 +338,16 @@ class Builder {
       start: 0,
       end: code.length,
     };
+    this.errors = [];
   }
 
   end() {
     this.#program.comments = this.#comments;
     return this.#program;
   }
-
+  onError(data: Ranges.Error) {
+    this.errors.push(data);
+  }
   onText(range: Range) {
     pushBody(this.#parentNode, {
       type: NodeType.Text,
@@ -455,7 +459,7 @@ class Builder {
                 },
                 start: range.start,
                 end: UNFINISHED,
-              }),
+              })
             );
 
             this.#comments = undefined;
@@ -473,7 +477,7 @@ class Builder {
               comments: this.#comments,
               start: range.start,
               end: UNFINISHED,
-            }),
+            })
           );
 
           this.#comments = undefined;
@@ -486,7 +490,7 @@ class Builder {
               comments: this.#comments,
               start: range.start,
               end: UNFINISHED,
-            }),
+            })
           );
 
           this.#comments = undefined;
@@ -499,7 +503,7 @@ class Builder {
               comments: this.#comments,
               start: range.start,
               end: UNFINISHED,
-            }),
+            })
           );
 
           this.#comments = undefined;
@@ -512,7 +516,7 @@ class Builder {
               comments: this.#comments,
               start: range.start,
               end: UNFINISHED,
-            }),
+            })
           );
 
           this.#comments = undefined;
@@ -718,7 +722,7 @@ class Builder {
           args: undefined,
           start: range.start,
           end: range.end,
-        }),
+        })
     );
   }
   onAttrArgs(range: Ranges.Value) {
@@ -819,7 +823,7 @@ function pushAttr(parent: Node.ParentTag, node: Node.AttrNode) {
 }
 
 function hasCloseTag(
-  parent: Node.AnyNode,
+  parent: Node.AnyNode
 ): parent is Node.ParentTag & { close: Range } {
   return (parent as Node.ParentTag).close !== undefined;
 }

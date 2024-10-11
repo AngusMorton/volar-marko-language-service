@@ -1,14 +1,6 @@
 import type { CodeMapping, VirtualCode } from "@volar/language-core";
-import {
-  parse,
-  extractScript,
-  ScriptLang,
-  Project,
-  NodeType,
-  Node,
-  Range,
-} from "@marko/language-tools";
-import path from "path";
+import { ScriptLang, extractScript, type parse } from "marko-language-tools";
+import { TextDocument } from "vscode-html-languageservice";
 
 export function parseScripts(
   fileId: string,
@@ -23,7 +15,58 @@ export function parseScripts(
     ts: ts,
   });
   const scriptText = script.toString();
-  const mappings: CodeMapping[] = generateMappingsFromExtracted(script);
+
+  const sourcedDoc = TextDocument.create("", "marko", 0, parsed.code);
+  const genDoc = TextDocument.create("", "typescript", 0, scriptText);
+
+  const mappings: CodeMapping[] = [];
+  for (const token of script.tokens) {
+    // if (token.length === 0) {
+    //   // Skip empty tokens;
+    //   continue;
+    // }
+
+    const sourceRange = {
+      start: sourcedDoc.positionAt(token.sourceStart),
+      end: sourcedDoc.positionAt(token.sourceStart + token.length),
+    };
+    const generatedRange = {
+      start: genDoc.positionAt(token.generatedStart),
+      end: genDoc.positionAt(token.generatedStart + token.length),
+    };
+
+    const sourceText = sourcedDoc.getText(sourceRange);
+    const generatedText = genDoc.getText(generatedRange);
+
+    // if (sourceText.trim() === "" || generatedText.trim() === "") {
+    //   continue;
+    // }
+
+    if (sourceText !== generatedText) {
+      console.error(
+        "Mismatched text",
+        sourceText,
+        generatedText,
+        sourceRange,
+        generatedRange
+      );
+      throw new Error("Mismatched text");
+    }
+
+    mappings.push({
+      sourceOffsets: [token.sourceStart],
+      generatedOffsets: [token.generatedStart],
+      lengths: [token.length],
+      data: {
+        completion: true,
+        format: false,
+        navigation: true,
+        semantic: true,
+        structure: true,
+        verification: true,
+      },
+    });
+  }
 
   if (mappings.length > 0) {
     return [
@@ -42,24 +85,4 @@ export function parseScripts(
   }
 
   return [];
-}
-
-function generateMappingsFromExtracted(
-  extracted: ReturnType<typeof extractScript>
-): CodeMapping[] {
-  return extracted.tokens.map((it) => {
-    return {
-      sourceOffsets: [it.sourceStart],
-      generatedOffsets: [it.generatedStart],
-      lengths: [it.length],
-      data: {
-        completion: true,
-        format: false,
-        navigation: true,
-        semantic: true,
-        structure: true,
-        verification: true,
-      },
-    };
-  });
 }

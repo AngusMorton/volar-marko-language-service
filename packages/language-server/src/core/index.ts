@@ -9,13 +9,17 @@ import type { URI } from "vscode-uri";
 import type ts from "typescript";
 import path from "path";
 import type { PackageInfo } from "../util/importPackage";
-import { Project, parse } from "@marko/language-tools";
-import type { MarkoMeta } from "@marko/compiler";
 import { parseStyles } from "./parseStyles";
 import { parseHtml } from "./parseHtml";
-import { DiagnosticType, TaglibLookup } from "@marko/babel-utils";
-import type { Extracted } from "./internal/Extractor";
 import { getLanguageServerTypesDir } from "../util/getLanguageServerTypesDir";
+import {
+  DiagnosticType,
+  Extracted,
+  MarkoMeta,
+  Project,
+  TaglibLookup,
+  parse,
+} from "marko-language-tools";
 
 const decoratedHosts = new WeakSet<ts.LanguageServiceHost>();
 
@@ -57,6 +61,7 @@ export function addMarkoTypes(
       addedFileNames.push(ts.sys.resolvePath(runtimeTypes));
     }
 
+    console.log("addedFileNames", addedFileNames);
     return [...getScriptFileNames(), ...addedFileNames];
   };
 }
@@ -137,7 +142,6 @@ export class MarkoVirtualCode implements VirtualCode {
 
     const text = this.snapshot.getText(0, this.snapshot.getLength());
     this.markoAst = parse(text, this.fileName);
-    // TODO: Fork @marko/language-tools?
     this.parserDiagnostics = this.markoAst.errors ?? [];
 
     const dirname = path.dirname(fileName);

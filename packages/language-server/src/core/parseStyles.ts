@@ -1,6 +1,5 @@
-import { extractStyle, parse } from "@marko/language-tools";
-import type { Extracted } from "@marko/language-tools";
 import type { CodeMapping, VirtualCode } from "@volar/language-core";
+import { Extracted, extractStyle, type parse } from "marko-language-tools";
 
 export function parseStyles(
   fileId: string,
